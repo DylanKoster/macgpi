@@ -27,6 +27,25 @@ def cli():
         help="Port for the model server.",
     )
 
+    parser.add_argument(
+        "--model-toolset",
+        default=None,
+        help="The tool call parser for the model. If None, the tool call parser will tried to be implied, if unsuccesfull, an error will occur. See https://docs.vllm.ai/en/latest/features/tool_calling/#automatic-function-calling",
+    )
+    parser.add_argument(
+        "--max-model-len",
+        type=int,
+        default=None,
+        help="The maximum context length for the model. If None, the default context length of the model will be used.",
+    )
+    parser.add_argument(
+        "--tensor-parallel-size",
+        type=int,
+        default=1,
+        help="The amount of multithreading to use.",
+    )
+
+
     args = parser.parse_args()
 
     macgpi(**vars(args))

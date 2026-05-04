@@ -1,5 +1,6 @@
 import os
 
+from macgpi.engine.agent_manager import AgentManager
 from macgpi.engine.vllm import VLLMServer
 from macgpi.engine.template_manager import TemplateManager
 
@@ -41,25 +42,29 @@ def macgpi(
         if host_vllm:
             vLLMServer.start_vllm(model_host, model_port, tensor_parallel_size=tensor_parallel_size)
 
-        manager: TemplateManager = TemplateManager()
+        # Manager instantiations
+        templateManager: TemplateManager = TemplateManager()
+        agentManager: AgentManager = AgentManager(model_name, model_config={}, agent_config={})
 
         # If no phases are specified, default to all valid phase directories under the prompts directory
         if phases is None:
-            dirs: list[str] = os.listdir(manager.prompt_dir)
-            phases = [name for name in dirs if is_phase_dir(os.path.join(manager.prompt_dir, name))]
+            dirs: list[str] = os.listdir(templateManager.prompt_dir)
+            phases = [name for name in dirs if is_phase_dir(os.path.join(templateManager.prompt_dir, name))]
 
         # Pre-execution validation check
         for phase in phases:
-            if (not is_phase_dir(os.path.join(manager.prompt_dir, phase))):
-                raise ValueError(f"Phase {phase} is not a valid phase directory in {manager.prompt_dir}. Please " + 
+            if (not is_phase_dir(os.path.join(templateManager.prompt_dir, phase))):
+                raise ValueError(f"Phase {phase} is not a valid phase directory in {templateManager.prompt_dir}. Please " + 
                                  "ensure that it contains both a template.md file and a schema.json file.")
 
         # Phase execution
         for phase in phases:
             print(f"Starting phase {phase}...")
-            template_output: str = manager.render(phase, system_prd=input, output_dir=output_dir)
-            
+            template_output: str = templateManager.render(phase, system_prd=input, output_dir=output_dir)
+            agent_output: str = agentManager.run(template_output)
+
             print(f"Finished phase {phase}.")
+
     except Exception as e:
         print(f"An error occured while executing phase {phase}:\nError {e}")
     finally:

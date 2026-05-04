@@ -44,7 +44,12 @@ def cli():
         default=1,
         help="The amount of multithreading to use.",
     )
-
+    parser.add_argument(
+        "--phases",
+        nargs="+",
+        default=None,
+        help="The phases of the pipeline to execute, in order. If not provided, all phases will be executed in the order they are found in the prompts directory.",
+    )
 
     args = parser.parse_args()
 

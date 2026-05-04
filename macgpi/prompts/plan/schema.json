@@ -1,0 +1,75 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Planning Phase Schema",
+    "description": "Schema for the planning phase output of a maintainable software artifact generation pipeline",
+    "type": "object",
+    "required": [
+        "objectives",
+        "architecture",
+        "components",
+        "dependencies"
+    ],
+    "properties": {
+        "objectives": {
+            "type": "array",
+            "description": "Primary goals and requirements for the software artifact",
+            "items": {
+                "type": "object",
+                "required": ["id", "description", "priority"],
+                "properties": {
+                    "id": { "type": "string" },
+                    "description": { "type": "string" },
+                    "priority": { "enum": ["high", "medium", "low"] },
+                    "metrics": { "type": "array", "items": { "type": "string" } }
+                }
+            }
+        },
+        "architecture": {
+            "type": "object",
+            "description": "High-level architectural decisions",
+            "required": ["pattern", "rationale"],
+            "properties": {
+                "pattern": { "type": "string", "examples": ["MVC", "microservices", "layered"] },
+                "rationale": { "type": "string" },
+                "constraints": { "type": "array", "items": { "type": "string" } }
+            }
+        },
+        "components": {
+            "type": "array",
+            "description": "Planned components and modules",
+            "items": {
+                "type": "object",
+                "required": ["name", "responsibility"],
+                "properties": {
+                    "name": { "type": "string" },
+                    "responsibility": { "type": "string" },
+                    "interfaces": { "type": "array", "items": { "type": "string" } },
+                    "testability": { "type": "string" }
+                }
+            }
+        },
+        "dependencies": {
+            "type": "array",
+            "description": "External libraries and internal component dependencies",
+            "items": {
+                "type": "object",
+                "required": ["name", "type"],
+                "properties": {
+                    "name": { "type": "string" },
+                    "type": { "enum": ["external", "internal"] },
+                    "version": { "type": "string" },
+                    "justification": { "type": "string" }
+                }
+            }
+        },
+        "quality_standards": {
+            "type": "object",
+            "description": "Maintainability and quality benchmarks",
+            "properties": {
+                "coding_standards": { "type": "array", "items": { "type": "string" } },
+                "documentation_level": { "enum": ["minimal", "standard", "comprehensive"] },
+                "test_coverage_target": { "type": "number", "minimum": 0, "maximum": 100 }
+            }
+        }
+    }
+}

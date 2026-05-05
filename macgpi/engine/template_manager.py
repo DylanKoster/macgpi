@@ -1,7 +1,9 @@
 import os
+import logging
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, Template
 
+logger = logging.getLogger(__name__)
 
 class TemplateManager:
     '''
@@ -43,6 +45,8 @@ class TemplateManager:
         template_path = f"{phase}/template.md"
         schema_path = os.path.join(self.prompt_dir, phase, f"schema.json")
         
+        logger.debug(f"Rendering template for phase {phase} at path {template_path} with schema at path {schema_path}")
+
         schema_format: str | None = None
         with open(schema_path, "r") as f:
             schema_format = f.read()
@@ -51,4 +55,6 @@ class TemplateManager:
             raise Exception(f"Failed to read schema for phase {phase} at path {schema_path}")
 
         template: Template = self.env.get_template(template_path)
-        return template.render(schema_format=schema_format, **kwargs)
+        render: str = template.render(schema_format=schema_format, **kwargs)
+        logger.debug(f"Done rendering template!")
+        return render

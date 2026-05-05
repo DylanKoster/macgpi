@@ -1,3 +1,4 @@
+import logging
 import subprocess
 import os
 import time
@@ -5,6 +6,8 @@ import urllib.request
 import urllib.error
 
 from enum import Enum
+
+logger = logging.getLogger(__name__)
 
 class ServerStatus(Enum):
     STARTING=0
@@ -71,27 +74,27 @@ class VLLMServer:
                 stdout=open(logFile, "w"),
                 stderr=open(logFile, "w"),
             )
-            print(f"vLLM server starting on {host}:{port} with PID {process.pid}")
+            logger.info(f"vLLM server starting on {host}:{port} with PID {process.pid}")
             self.process = process
 
             status = self._wait_until_online(host, port, timeout_seconds=120)
             match status:
                 case ServerStatus.ACTIVE:
-                    print(f"vLLM server started on {host}:{port} with PID {process.pid}")
+                    logger.info(f"vLLM server started on {host}:{port} with PID {process.pid}")
                     return True
                 case ServerStatus.TIMEOUT:
-                    print(f"vLLM server failed to become ready on {host}:{port} within 120 seconds.")
+                    logger.error(f"vLLM server failed to become ready on {host}:{port} within 120 seconds.")
                     self.close()
                     return False
                 case ServerStatus.ERR:
-                    print(f"vLLM server process exited with code {process.returncode} before becoming ready. See the " +
-                          f"vLLM log at {logFile} for more details.")    
+                    logger.error(f"vLLM server process exited with code {process.returncode} before becoming ready. "+ 
+                                 f"See the vLLM log at {logFile} for more details.")    
                     self.close()
                     return False
                 case _:
                     return False
         except Exception as e:
-            print(f"Exception occured while starting vLLM server: {e}")
+            logger.error(f"Exception occured while starting vLLM server: {e}")
             return False
 
     def _wait_until_online(self, host: str, port: int, timeout_seconds: int = 120) -> ServerStatus:
@@ -102,7 +105,7 @@ class VLLMServer:
             f"http://{host}:{port}/health",
             f"http://{host}:{port}/v1/models",
         ]
-
+        logger.debug("Waiting for vLLM server to become active...")
         deadline = time.monotonic() + timeout_seconds
         while time.monotonic() < deadline:
             if self.process and self.process.poll() is not None:
@@ -115,6 +118,7 @@ class VLLMServer:
                             return ServerStatus.ACTIVE
                 except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError):
                     continue
+            logger.debug(f"Failed polling {urls}, retrying in 2 seconds...")
 
             time.sleep(2)
 
@@ -127,7 +131,7 @@ class VLLMServer:
         """
         if self.process:
             self.process.terminate()
-            print(f"vLLM server with PID {self.process.pid} terminated.")
+            logger.info(f"vLLM server with PID {self.process.pid} terminated.")
             self.process = None
 
 

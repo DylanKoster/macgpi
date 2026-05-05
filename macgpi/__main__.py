@@ -1,4 +1,5 @@
 import argparse
+import logging
 
 from macgpi.engine.main import macgpi
 
@@ -65,10 +66,21 @@ def cli():
         default=None,
         help="Configuration file for the agent. If not provided, the default mini-swe-agent configuration will be used.",
     )
+    parser.add_argument(
+        "--log-level",
+        default="INFO",
+        help="The verbosity of MACGPi, either DEBUG, INFO, WARNING, ERROR or CRITICAL."
+    )
 
     args = parser.parse_args()
 
-    macgpi(**vars(args))
+    logging.basicConfig(level=args.log_level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+    # Remove log_level from params since it's not used in macgpi function
+    params = vars(args)
+    params.pop("log_level")  
+    
+    macgpi(**params)
 
 if __name__ == "__main__":
     cli()

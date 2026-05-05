@@ -2,7 +2,7 @@ import logging
 import os
 
 from macgpi.engine.agent_manager import AgentManager
-from macgpi.engine.vllm import VLLMServer
+from macgpi.engine.vllm import vllm_health
 from macgpi.engine.template_manager import TemplateManager
 
 logger = logging.getLogger(__name__)
@@ -11,35 +11,23 @@ def macgpi(
     input: str,
     model_name: str,
     output_dir: str,
-    host_vllm: bool = True,
     model_host: str = "localhost",
     phases: list[str] | None = None,
     model_port: int = 8000,
-    model_toolset: str | None = None,
-    max_model_len: int | None = None,
-    tensor_parallel_size: int = 1,
     prompt_dir: str | None = None,
     model_config: dict | None = None,
     agent_config: dict | None = None
 ):
     '''
-    Entry point for the MACGPi pipeline. This function orchestrates the execution of the pipeline by managing the vLLM
-    server and executing the specified phase MACGPi phases.
+    Entry point for the MACGPi pipeline. This function orchestrates the execution of the pipeline executing the
+    specified MACGPi phases on the (vLLM) hosted LLM.
 
     Parameters:
         input (str): The project/issue description to be processed by the pipeline.
         model_name (str): The name of the language model to use, as understood by mini-swe-agent.
         output_dir (str): The path to the target project directory where the output will be generated.
-        host_vllm (bool, optional): If True, MACGPi will host the vLLM server itself; if False, it is assumed that a
-            vLLM server is already running and accessible at the specified model_host and model_port. Defaults to True.
         model_host (str, optional): The host address of the vLLM server. Defaults to "localhost".
         model_port (int, optional): The port number of the vLLM server. Defaults to 8000.
-        model_toolset (str, optional  ): The tool call parser for the model. If None, the tool call parser will tried to
-            be implied, if unsuccesfull, an error will occur. See 
-            https://docs.vllm.ai/en/latest/features/tool_calling/#automatic-function-calling
-        max_model_len (int, optional): The maximum context length for the model. If None, the default context length of
-            the model will be used.
-        tensor_parallel_size (int, optional): The amount of multithreading to use for the vLLM server. Defaults to 1.
         phases (list[str], optional): The phases of the pipeline to execute, in order. If not provided, all phases will
             be executed in the order they are found in the prompts directory.
         prompt_dir (str, optional): The directory under which the valid phase prompts and schemas are located. If None,
@@ -50,13 +38,14 @@ def macgpi(
             configuration will be used.
     '''
     try:
-        vLLMServer: VLLMServer = VLLMServer(model_name, model_toolset=model_toolset, max_model_len=max_model_len)
-        if host_vllm:
-            if not vLLMServer.start_vllm(model_host, model_port, tensor_parallel_size=tensor_parallel_size):
-                logger.error("Failed to start vLLM server. Please ensure that vLLM is installed and properly " + 
-                             "configured.")
-                return
-            
+        if not vllm_health(model_host, model_port):
+            logger.error("Cannot reach vLLM server. Start a server on {model_host}:{model_port} or update the host " +
+                         "and port parameters accordingly.")
+            return
+
+        # Attempting vLLM host connection
+        logger.debug(f"Attempting to connect to model server at {model_host}:{model_port}...")
+        
         # Manager instantiations
         logger.debug("Instantiating managers.")
         
@@ -99,9 +88,6 @@ def macgpi(
         logger.info(f"MACGPi execution finished, result copied to {output_dir}")
     except Exception as e:
         logger.error(f"An error occured while executing MACGPi:\nError {e}")
-    finally:
-        vLLMServer.close()
-
 
 def is_phase_dir(path: str):
     '''

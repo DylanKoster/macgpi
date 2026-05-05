@@ -11,12 +11,6 @@ def cli():
     parser.add_argument("model_name", help="Model name understood by mini-swe-agent.")
     parser.add_argument("output_dir", help="Path to the target project directory.")
     parser.add_argument(
-        "--host-vllm",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="If True, MACGPi hosts the vLLM itself; if False, provide --model-host and --model-port.",
-    )
-    parser.add_argument(
         "--model-host",
         default="localhost",
         help="Host for the model server.",
@@ -26,24 +20,6 @@ def cli():
         type=int,
         default=8000,
         help="Port for the model server.",
-    )
-
-    parser.add_argument(
-        "--model-toolset",
-        default=None,
-        help="The tool call parser for the model. If None, the tool call parser will tried to be implied, if unsuccesfull, an error will occur. See https://docs.vllm.ai/en/latest/features/tool_calling/#automatic-function-calling",
-    )
-    parser.add_argument(
-        "--max-model-len",
-        type=int,
-        default=None,
-        help="The maximum context length for the model. If None, the default context length of the model will be used.",
-    )
-    parser.add_argument(
-        "--tensor-parallel-size",
-        type=int,
-        default=1,
-        help="The amount of multithreading to use.",
     )
     parser.add_argument(
         "--phases",

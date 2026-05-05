@@ -31,7 +31,6 @@ class AgentManager:
         '''
         return self.agent.run(prompt)
 
-
     def load_model_config(self, model_config_file: str, model_name: str, model_host: str, model_port: int):
         '''
         Load a model configuration from the given file and update the agent's model configuration accordingly.

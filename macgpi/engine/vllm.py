@@ -1,7 +1,18 @@
 import subprocess
-import sys
 import os
 import time
+import urllib.request
+import urllib.error
+
+from enum import Enum
+
+class ServerStatus(Enum):
+    STARTING=0
+    ACTIVE=1
+    CLOSED=2
+    TIMEOUT=3
+    ERR=4
+
 
 class VLLMServer:
     def __init__(self, model_name: str, model_toolset: str = None, max_model_len: int=None):
@@ -9,9 +20,13 @@ class VLLMServer:
         General vLLM server class, starts and stops the vLLMServer.
 
         Args:
-            model_name (str): The name (local or huggingface) of the model to use. If no local model is available (e.g. in the huggingface cache), the model is downloaded from huggingface.
-            model_toolset (str): The tool call parser for the model. If None, the tool call parser will tried to be implied, if unsuccesfull, an error will occur. See https://docs.vllm.ai/en/latest/features/tool_calling/#automatic-function-calling 
-            max_model_len (int): The maximum context length for the model. If None, the default context length of the model will be used.
+            model_name (str): The name (local or huggingface) of the model to use. If no local model is available (e.g.
+                in the huggingface cache), the model is downloaded from huggingface.
+            model_toolset (str): The tool call parser for the model. If None, the tool call parser will tried to be
+                implied, if unsuccesfull, an error will occur. See 
+                https://docs.vllm.ai/en/latest/features/tool_calling/#automatic-function-calling 
+            max_model_len (int): The maximum context length for the model. If None, the default context length of the
+                model will be used.
         """
         self.process = None
         self.model_name = model_name
@@ -21,7 +36,8 @@ class VLLMServer:
         if (model_toolset == None):
             self.tool_call_parser = get_tool_call_parser(model_name)
             if (self.tool_call_parser == None):
-                raise ValueError(f"Could not imply a tool call parser for model {model_name}. Please provide a tool call parser using the --model-toolset argument.")
+                raise ValueError(f"Could not imply a tool call parser for model {model_name}. Please provide a tool " +
+                                 "call parser using the --model-toolset argument.")
         else:
             self.tool_call_parser = model_toolset
 
@@ -40,10 +56,12 @@ class VLLMServer:
 
         try:
             curEpoch: int = time.time()
-            logFile: str = f"{os.getcwd()}/vllm_logs/vLLMServer_log{curEpoch}.log"
+            logFile: str = f"{os.getcwd()}/vllm_logs/vLLMServer_log_{curEpoch}.log"
             os.makedirs(os.path.dirname(logFile), exist_ok=True)
 
-            cmd: list[str] = ["vllm", "server", "--tensor-parallel-size", str(tensor_parallel_size), "--host", host, "--port", str(port), "--enable-auto-tool-choice", "--tool-call-parser", self.tool_call_parser]
+            cmd: list[str] = ["vllm", "server", "--tensor-parallel-size", str(tensor_parallel_size), "--host", host, 
+                              "--port", str(port), "--enable-auto-tool-choice", "--tool-call-parser", 
+                              self.tool_call_parser]
             if (self.max_model_len != None):
                 cmd.extend(["--max-model-len", str(self.max_model_len)])
 
@@ -53,12 +71,54 @@ class VLLMServer:
                 stdout=open(logFile, "w"),
                 stderr=open(logFile, "w"),
             )
-            print(f"vLLM server started on {host}:{port} with PID {process.pid}")
+            print(f"vLLM server starting on {host}:{port} with PID {process.pid}")
             self.process = process
-            return True
+
+            status = self._wait_until_online(host, port, timeout_seconds=120)
+            match status:
+                case ServerStatus.ACTIVE:
+                    print(f"vLLM server started on {host}:{port} with PID {process.pid}")
+                    return True
+                case ServerStatus.TIMEOUT:
+                    print(f"vLLM server failed to become ready on {host}:{port} within 120 seconds.")
+                    self.close()
+                    return False
+                case ServerStatus.ERR:
+                    print(f"vLLM server process exited with code {process.returncode} before becoming ready. See the " +
+                          f"vLLM log at {logFile} for more details.")    
+                    self.close()
+                    return False
+                case _:
+                    return False
         except Exception as e:
-            print(f"Failed to start vLLM server: {e}")
+            print(f"Exception occured while starting vLLM server: {e}")
             return False
+
+    def _wait_until_online(self, host: str, port: int, timeout_seconds: int = 120) -> ServerStatus:
+        """
+        Poll common vLLM endpoints until the server is reachable or timeout is hit.
+        """
+        urls = [
+            f"http://{host}:{port}/health",
+            f"http://{host}:{port}/v1/models",
+        ]
+
+        deadline = time.monotonic() + timeout_seconds
+        while time.monotonic() < deadline:
+            if self.process and self.process.poll() is not None:
+                return ServerStatus.ERR
+
+            for url in urls:
+                try:
+                    with urllib.request.urlopen(url, timeout=2) as response:
+                        if 200 <= response.status < 300:
+                            return ServerStatus.ACTIVE
+                except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError):
+                    continue
+
+            time.sleep(2)
+
+        return ServerStatus.TIMEOUT
 
 
     def close(self):
@@ -82,6 +142,7 @@ def get_tool_call_parser(model_name: str) -> str | None:
     parser_rules = [
         # More specific rules first
         ("qwen3-coder", "qwen3_xml"),
+        ("qwen2.5-coder", "hermes"),
         ("deepseek-v3.1", "deepseek_v31"),
         ("deepseek-v3", "deepseek_v3"),
         ("llama-3.1", "llama3_json"),

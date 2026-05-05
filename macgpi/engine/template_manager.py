@@ -6,9 +6,9 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined, Template
 class TemplateManager:
     '''
     Manages the loading and rendering of templates for different phases of the pipeline. Templates are expected to be
-    organized in subdirectories under a main prompts directory, which is provided in the constructor. with each subdirectory named after the phase it
-    corresponds to. Each phase's subdirectory should contain a "template.md" file for the template and a "schema.json"\
-    file for the output schema.
+    organized in subdirectories under a main prompts directory, which is provided in the constructor. Each
+    subdirectory should be named after the phase it corresponds to. Each phase's subdirectory should contain a
+    "template.md" file for the template and a "schema.json" file for the output schema.
 
     Parameters:
         prompt_dir (str, optional): The directory where the prompt templates are located. If not provided, it defaults
@@ -50,6 +50,5 @@ class TemplateManager:
         if (schema_format == None):
             raise Exception(f"Failed to read schema for phase {phase} at path {schema_path}")
 
-    
         template: Template = self.env.get_template(template_path)
         return template.render(schema_format=schema_format, **kwargs)

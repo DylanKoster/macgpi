@@ -10,11 +10,14 @@ def macgpi(
     output_dir: str,
     host_vllm: bool = True,
     model_host: str = "localhost",
-    phases: list[str] = None,
+    phases: list[str] | None = None,
     model_port: int = 8000,
-    model_toolset: str = None,
-    max_model_len: int = None,
+    model_toolset: str | None = None,
+    max_model_len: int | None = None,
     tensor_parallel_size: int = 1,
+    prompt_dir: str | None = None,
+    model_config: dict | None = None,
+    agent_config: dict | None = None
 ):
     '''
     Entry point for the MACGPi pipeline. This function orchestrates the execution of the pipeline by managing the vLLM
@@ -36,15 +39,24 @@ def macgpi(
         tensor_parallel_size (int, optional): The amount of multithreading to use for the vLLM server. Defaults to 1.
         phases (list[str], optional): The phases of the pipeline to execute, in order. If not provided, all phases will
             be executed in the order they are found in the prompts directory.
+        prompt_dir (str, optional): The directory under which the valid phase prompts and schemas are located. If None,
+            it defaults to a "prompts" directory located in the parent directory of this module.
+        model_config (dict, optional): Configuration file for the model. If None, the default mini-swe-agent
+            configuration will be used.
+        agent_config (dict, optional): Configuration file for the agent. If None, the default mini-swe-agent
+            configuration will be used.
     '''
     try:
         vLLMServer: VLLMServer = VLLMServer(model_name, model_toolset=model_toolset, max_model_len=max_model_len)
         if host_vllm:
-            vLLMServer.start_vllm(model_host, model_port, tensor_parallel_size=tensor_parallel_size)
+            if not vLLMServer.start_vllm(model_host, model_port, tensor_parallel_size=tensor_parallel_size):
+                raise Exception("Failed to start vLLM server. Please ensure that vLLM is installed and properly " + 
+                                "configured.")
 
         # Manager instantiations
-        templateManager: TemplateManager = TemplateManager()
-        agentManager: AgentManager = AgentManager(model_name, model_config={}, agent_config={})
+        templateManager: TemplateManager = TemplateManager(prompt_dir=prompt_dir)
+        agentManager: AgentManager = AgentManager(model_name, model_host=model_host, model_port=model_port,
+                                                  model_config_file=model_config, agent_config_file=agent_config)
 
         # If no phases are specified, default to all valid phase directories under the prompts directory
         if phases is None:
@@ -54,8 +66,8 @@ def macgpi(
         # Pre-execution validation check
         for phase in phases:
             if (not is_phase_dir(os.path.join(templateManager.prompt_dir, phase))):
-                raise ValueError(f"Phase {phase} is not a valid phase directory in {templateManager.prompt_dir}. Please " + 
-                                 "ensure that it contains both a template.md file and a schema.json file.")
+                raise ValueError(f"Phase {phase} is not a valid phase directory in {templateManager.prompt_dir}. " +
+                                 "Please ensure that it contains both a template.md file and a schema.json file.")
 
         # Phase execution
         for phase in phases:
@@ -66,7 +78,7 @@ def macgpi(
             print(f"Finished phase {phase}.")
 
     except Exception as e:
-        print(f"An error occured while executing phase {phase}:\nError {e}")
+        print(f"An error occured while executing MACGPi:\nError {e}")
     finally:
         vLLMServer.close()
 

@@ -39,6 +39,9 @@ Analyze the provided PRD and generate a structured implementation plan that incl
 - Tools and infrastructure
 
 ## Output Format
-Provide the plan in structured json with clear sections and bullet points.
+Provide the plan in structured json with clear sections and bullet points. ONLY generate the plan, do NOT generate any code yet.
 The following schema MUST be followed.
 {{ schema_format }}
+
+## Output location
+**IMPORTANT:** ONLY WRITE YOUR RESULTS TO {{ output_dir }}/docs

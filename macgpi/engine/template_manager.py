@@ -30,7 +30,7 @@ class TemplateManager:
             lstrip_blocks=True,
         )
 
-    def render(self, phase: str, **kwargs) -> str:
+    def render(self, phase_dir: str, **kwargs) -> str:
         '''
         Render the template for the given phase with the provided keyword arguments.
         The template is searched in the prompts directory under a subdirectory named after the phase,
@@ -38,23 +38,26 @@ class TemplateManager:
         subdirectory and named "schema.json".
 
         Parameters:
-            phase (str): The name of the phase whose template should be rendered.
+            phase_dir (str): The path to the phase directory whose template should be rendered.
             **kwargs: Additional keyword arguments to pass to the template for rendering.
         '''
         # Use template name relative to the loader root
-        template_path = f"{phase}/template.md"
-        schema_path = os.path.join(self.prompt_dir, phase, f"schema.json")
-        
-        logger.debug(f"Rendering template for phase {phase} at path {template_path} with schema at path {schema_path}")
+        template_path = os.path.join(phase_dir, "template.md")
+        schema_path = os.path.join(self.prompt_dir, phase_dir, "schema.json")
 
         schema_format: str | None = None
-        with open(schema_path, "r") as f:
-            schema_format = f.read()
-        
-        if (schema_format == None):
-            raise Exception(f"Failed to read schema for phase {phase} at path {schema_path}")
+        if os.path.exists(schema_path):
+            with open(schema_path, "r") as f:
+                schema_format = f.read()
+
+        logger.debug(f"Rendering template for phase {phase_dir} at path {template_path} {f"with schema at path {schema_path}" if schema_format is not None else ""}")
 
         template: Template = self.env.get_template(template_path)
-        render: str = template.render(schema_format=schema_format, **kwargs)
+
+        if (schema_format is not None):
+            kwargs.update({"schema_format": schema_format})
+
+        render: str = template.render(**kwargs)
+
         logger.debug(f"Done rendering template!")
         return render

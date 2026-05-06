@@ -43,6 +43,11 @@ def cli():
         help="Configuration file for the agent. If not provided, the default mini-swe-agent configuration will be used.",
     )
     parser.add_argument(
+        "--phases-config",
+        default=None,
+        help="Configuration file for the phases. If not provided, the default MACGPi configuration will be used.",
+    )
+    parser.add_argument(
         "--log-level",
         default="INFO",
         help="The verbosity of MACGPi, either DEBUG, INFO, WARNING, ERROR or CRITICAL."

@@ -1,0 +1,20 @@
+{
+    "phases": {
+        "plan": {
+            "inputs": {
+                "system_prd": "docs/project_description.md"
+            },
+            "schema": true,
+            "path": "01_plan/",
+            "output_path": "docs/implementation_plan.json"
+        },
+        "implement": {
+            "inputs": {
+                "system_prd": "docs/project_description.md",
+                "implementation_plan": "docs/implementation_plan.json"
+            },
+            "schema": false,
+            "path": "02_implement/"
+        }
+    }
+}

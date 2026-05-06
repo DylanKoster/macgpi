@@ -39,7 +39,7 @@ def macgpi(
     '''
     try:
         if not vllm_health(model_host, model_port):
-            logger.error("Cannot reach vLLM server. Start a server on {model_host}:{model_port} or update the host " +
+            logger.error(f"Cannot reach vLLM server. Start a server on {model_host}:{model_port} or update the host " +
                          "and port parameters accordingly.")
             return
 

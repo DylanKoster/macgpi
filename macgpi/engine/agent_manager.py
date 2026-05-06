@@ -40,9 +40,12 @@ class AgentManager:
         '''
         model_config_extra: dict = {
             "model_name": model_name,
-            "api_base": f"http://{model_host}:{model_port}/v1",
-            "custom_llm_provider": "hosted_vllm",
-            "cost_tracking": "ignore_errors"
+            "cost_tracking": "ignore_errors",
+            "model_kwargs": {
+                "api_base": f"http://{model_host}:{model_port}/v1",
+                "custom_llm_provider": "hosted_vllm",
+            },
+            "api_key": "EMPTY",
         }
 
         if model_config_file == None:

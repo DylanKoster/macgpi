@@ -45,7 +45,7 @@ pip install -r requirements.txt
 3. Run MACGPi
 
 ```bash
-python3 -m machpi <problem description> <model name> <output directory> [options] 
+python3 -m macgpi <problem description> <model name> <output directory> [options] 
 ```
 
 ## CLI parameters

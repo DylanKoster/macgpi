@@ -48,8 +48,6 @@ pip install -r requirements.txt
 python3 -m machpi <problem description> <model name> <output directory> [options] 
 ```
 
-Adjust scripts and commands to your environment if you are not on Slurm.
-
 ## CLI parameters
 
 ### Required parameters

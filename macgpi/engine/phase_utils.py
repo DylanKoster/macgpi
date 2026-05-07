@@ -1,10 +1,12 @@
 
 import json
+import logging
 import os
 
 
 import os
 
+logger = logging.getLogger(__name__)
 
 def parse_phase_config(config_file: str | None) -> dict:
     '''
@@ -34,7 +36,7 @@ def parse_phase_config(config_file: str | None) -> dict:
     with open(config_file, "r") as f:
         config: dict = json.load(f)
     
-    return config["phases"]
+    return config
 
 def is_phase_dir(path: str, schema_required: bool = True) -> bool:
     '''
@@ -74,7 +76,7 @@ def is_finished_phase(phase: str) -> bool:
     '''
     return phase is None or phase == "finish"
 
-def get_next_phase(phase_config: dict) -> str | None:
+def get_next_phase(phase_config: dict, output_dir: str) -> str | None:
     '''
     Gets the next phase to execute from the given phase configuration. The next phase can either be specified statically
     in the "next" field of the phase configuration, or it can be specified dynamically in the output of the phase, in
@@ -85,14 +87,18 @@ def get_next_phase(phase_config: dict) -> str | None:
     if next_phase is None:
         return None
 
+
     if next_phase != "dynamic":
         return next_phase
     
+    logger.debug(f"Next phase is dynamic. Attempting to read next phase from output directory at {output_dir}...")
     output_path: str | None = phase_config.get("output_path", None)
     if output_path is None:
         return None
 
-    with open(output_path, "r") as f:
+    with open(os.path.join(output_dir, output_path), "r") as f:
         output_content: str = json.load(f)
+
+    logger.debug(f"Inferred phase: {output_content['next']} from output content at {output_path}:\n{json.dumps(output_content, indent=4)}")
 
     return output_content["next"]

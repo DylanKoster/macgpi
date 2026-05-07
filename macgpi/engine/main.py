@@ -2,6 +2,7 @@ from enum import Enum
 import json
 import logging
 import os
+import traceback
 
 from macgpi.engine.agent_manager import AgentManager
 from macgpi.engine.vllm import vllm_health
@@ -56,8 +57,8 @@ def macgpi(
                                                   model_config_file=model_config, agent_config_file=agent_config)
         
         logger.debug("Done instantiating managers!")
-        
-        phases_config: dict = parse_phase_config(phases_config)
+        macgpi_config: dict = parse_phase_config(phases_config)
+        phases_config: dict = macgpi_config["phases"]
 
         # Pre-execution validation check
         logger.debug("Executing pre-execution validation checks")
@@ -95,9 +96,17 @@ def macgpi(
         logger.debug("Done!")
 
         phase: str = list(phases_config.keys())[0]
+        max_phase_visits: dict = macgpi_config["max_phase_visits"]
+        phase_visits: dict = {phase_name: 0 for phase_name in phases_config.keys()}
         while not is_finished_phase(phase):
             logger.info(f"Starting phase {phase}...")
+            phase_visits[phase] += 1
+            if (phase_visits[phase] > max_phase_visits.get(phase, 1)):
+                logger.info(f"Phase {phase} has been visited more than the maximum allowed number of times. Stopping pipeline...")
+                break
+            
             phase_config: dict = phases_config[phase]
+            logger.debug(f"Phase config for phase {phase}:\n{json.dumps(phase_config, indent=4)}")
 
             output_path: str | None = output_dir
             if "output_path" in phase_config.keys():
@@ -110,8 +119,8 @@ def macgpi(
 
             logger.info(f"Finished phase {phase}.")
 
-            phase = get_next_phase(phase_config)
+            phase = get_next_phase(phase_config, output_dir=output_dir)
 
         logger.info(f"MACGPi execution finished, result copied to {output_dir}")
     except Exception as e:
-        logger.error(f"An error occured while executing MACGPi:\nError {e}")
+        logger.error(f"An error occured while executing MACGPi:\nError {traceback.format_exc()}")

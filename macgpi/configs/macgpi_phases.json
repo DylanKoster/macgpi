@@ -1,4 +1,10 @@
 {
+    "max_phase_visits": {
+        "plan": 1,
+        "implement": 1,
+        "evaluate": 3,
+        "revise": 3
+    },
     "phases": {
         "plan": {
             "inputs": {

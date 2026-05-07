@@ -8,7 +8,7 @@ You are an expert software architect tasked with revising an implementation of a
 
 - **PLAN**: {{ implementation_plan }}
 
-- **EVALUATION**: {{ evalaution_report }} 
+- **EVALUATION**: {{ evaluation_report }} 
 
 ## Your Task
 

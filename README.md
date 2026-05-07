@@ -62,7 +62,6 @@ Adjust scripts and commands to your environment if you are not on Slurm.
  
   - **--model-host** (**str**): The hostname of the local vLLM server (default "localhost"). 
   - **--model-port** (**int**): The port of the local vLLM server (default 8000).
-  - **--phases** (**list[str]**): The phases that should be run as a list of strings (default all phases).
   - **--prompt-dir** (**str**): The directory in which the phases and their corresponding prompts/schemas are located (default `macgpi/prompts`).
   - **--model-config** (**str**): The path to the config file for the LLM (default `macgpi/configs/model.config.yaml`, containing the default mini-swe-agent model config). See [this page](https://mini-swe-agent.com/latest/advanced/yaml_configuration/#model-configuration) for more information.
   - **--agent-config** (**str**): The path to the config file for the agent (default `macgpi/configs/agent.config.yaml`, containing the default mini-swe-agent agent config). See [this page](https://mini-swe-agent.com/latest/advanced/yaml_configuration/#agent-configuration) for more information.

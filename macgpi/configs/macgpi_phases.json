@@ -15,6 +15,15 @@
             },
             "schema": false,
             "path": "02_implement/"
+        },
+        "evaluate": {
+            "inputs": {
+                "system_prd": "docs/project_description.md",
+                "implementation_plan": "docs/implementation_plan.json"
+            },
+            "schema": true,
+            "path": "03_evaluate/",
+            "output_path": "docs/evaluation_report.json"
         }
     }
 }

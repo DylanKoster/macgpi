@@ -172,8 +172,9 @@ def read_phase_inputs(inputs: dict, output_dir: str) -> dict:
         dict: A dictionary mapping input names to their contents.
     '''
     input_contents: dict = {}
+    input_contents["output_dir"] = output_dir 
+
     for input_name, input_path in inputs.items():
         with open(os.path.join(output_dir, input_path), "r") as f:
             input_contents[input_name] = f.read()
-    
     return input_contents

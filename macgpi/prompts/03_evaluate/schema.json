@@ -9,7 +9,8 @@
     "overall_rating",
     "summary",
     "findings",
-    "recommendations"
+    "recommendations",
+    "next"
   ],
   "properties": {
     "evaluated_at": {
@@ -129,6 +130,10 @@
         "documentation": { "type": "string" },
         "test_coverage_target": { "type": "number", "minimum": 0, "maximum": 100 }
       }
+    },
+    "next": {
+      "type": "string",
+      "description": "Indicates the next phase to execute. Can ONLY be 'finish' or 'revise'. If 'finish', the pipeline will proceed to finish. If 'revise', the pipeline will loop back to the revise phase for further improvements."
     }
   },
   "additionalProperties": false

@@ -26,7 +26,7 @@
             "schema": true,
             "path": "03_evaluate/",
             "output_path": "docs/evaluation_report.json",
-            "next": "finish"
+            "next": "dynamic"
         },
         "revise": {
             "inputs": {

@@ -73,3 +73,26 @@ def is_finished_phase(phase: str) -> bool:
     executing all phases.
     '''
     return phase is None or phase == "finish"
+
+def get_next_phase(phase_config: dict) -> str | None:
+    '''
+    Gets the next phase to execute from the given phase configuration. The next phase can either be specified statically
+    in the "next" field of the phase configuration, or it can be specified dynamically in the output of the phase, in
+    which case the "next" field should be set to "dynamic".
+    '''
+    next_phase:  str | None = phase_config.get("next", None)
+
+    if next_phase is None:
+        return None
+
+    if next_phase != "dynamic":
+        return next_phase
+    
+    output_path: str | None = phase_config.get("output_path", None)
+    if output_path is None:
+        return None
+
+    with open(output_path, "r") as f:
+        output_content: str = json.load(f)
+
+    return output_content["next"]

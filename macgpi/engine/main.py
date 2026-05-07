@@ -6,7 +6,7 @@ import os
 from macgpi.engine.agent_manager import AgentManager
 from macgpi.engine.vllm import vllm_health
 from macgpi.engine.template_manager import TemplateManager
-from macgpi.engine.phase_utils import is_finished_phase, is_phase_dir, parse_phase_config, read_phase_inputs
+from macgpi.engine.phase_utils import get_next_phase, is_finished_phase, is_phase_dir, parse_phase_config, read_phase_inputs
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ def macgpi(
         phase: str = list(phases_config.keys())[0]
 
         # Test whether all phases contain valid phase directories
-        while not is_finished_phase(phase): 
+        for phase in phases_config.keys(): 
             logger.debug(f"Checking phase validity of phase \"{phase}\"")
 
             phase_config: dict = phases_config[phase]
@@ -76,9 +76,7 @@ def macgpi(
                              f"Please ensure that it contains both a template.md file" + 
                              f"{" and a schema.json file" if schema_required else ''}.")
                 return
-            
-            phase = phase_config.get("next", None)
-            
+                        
         logger.debug("Pre-validation checks OK")
 
         # Phase execution
@@ -112,7 +110,7 @@ def macgpi(
 
             logger.info(f"Finished phase {phase}.")
 
-            phase = phase_config.get("next", None)
+            phase = get_next_phase(phase_config)
 
         logger.info(f"MACGPi execution finished, result copied to {output_dir}")
     except Exception as e:

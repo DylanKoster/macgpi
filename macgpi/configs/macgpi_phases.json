@@ -27,6 +27,16 @@
             "path": "03_evaluate/",
             "output_path": "docs/evaluation_report.json",
             "next": "finish"
+        },
+        "revise": {
+            "inputs": {
+                "system_prd": "docs/project_description.md",
+                "implementation_plan": "docs/implementation_plan.json",
+                "evaluation_report": "docs/evaluation_report.json"
+            },
+            "schema": false,
+            "path": "04_revise/",
+            "next": "evaluate"
         }
     }
 }

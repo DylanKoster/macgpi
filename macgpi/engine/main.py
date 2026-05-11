@@ -116,7 +116,7 @@ def macgpi(
             inputs: dict = read_phase_inputs(phase_config["inputs"], output_dir)
             
             template_output: str = templateManager.render(phase_config["path"], output_path=output_path, **inputs)
-            # agentManager.run(template_output)
+            agentManager.run(template_output)
 
             logger.info(f"Finished phase {phase}.")
 

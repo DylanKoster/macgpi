@@ -7,7 +7,7 @@ import traceback
 from macgpi.engine.agent_manager import AgentManager
 from macgpi.engine.vllm import vllm_health
 from macgpi.engine.template_manager import TemplateManager
-from macgpi.engine.phase_utils import get_next_phase, is_finished_phase, is_phase_dir, parse_phase_config, read_phase_inputs
+from macgpi.engine.phase_utils import get_next_phase, get_phase_prompts, is_finished_phase, is_phase_dir, parse_phase_config, read_phase_inputs
 
 logger = logging.getLogger(__name__)
 
@@ -115,8 +115,11 @@ def macgpi(
 
             inputs: dict = read_phase_inputs(phase_config["inputs"], output_dir)
             
-            template_output: str = templateManager.render(phase_config["path"], output_path=output_path, **inputs)
-            agentManager.run(template_output)
+            prompts: list[str] = get_phase_prompts(phase_config["path"])
+            for prompt_file in prompts:
+                template_output: str = templateManager.render(phase_config["path"], prompt_file=prompt_file,
+                                                              output_path=output_path, **inputs)
+                agentManager.run(template_output)
 
             logger.info(f"Finished phase {phase}.")
 

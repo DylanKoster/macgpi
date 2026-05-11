@@ -102,3 +102,14 @@ def get_next_phase(phase_config: dict, output_dir: str) -> str | None:
     logger.debug(f"Inferred phase: {output_content['next']} from output content at {output_path}:\n{json.dumps(output_content, indent=4)}")
 
     return output_content["next"]
+
+def get_phase_prompts(phase_path: str) -> list[str]:
+    '''
+    Gets the prompts for a phase from the given phase path. The prompts are expected to be in a file called "template.md"
+    in the phase directory. If the "template.md" file contains multiple prompts, they should be separated by the string
+    "<!-- PROMPT SEPARATOR -->".
+    '''
+    files: list[str] = os.listdir(phase_path)
+    prompt_files: list[str] = [file for file in files if file.startswith("template") and file.endswith(".md")]
+    prompt_files.sort()
+    return prompt_files

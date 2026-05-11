@@ -98,7 +98,7 @@ The configuration is a JSON format, containing a single top-level objects, `phas
 The `phases` object contains the definitions of all MACGPi phases. The first phase in this object is the entry point for the pipeline. After that the definitions decide the flow of the pipeline. Each phase object defines its inputs, outputs, subsequent phase, prompt location, etc. A full list of object properties is shown below.
 
 - `inputs`: A list of files (relative to the artifact root) which are the inputs to the prompt. The name used as the key is the name with which it will be accessible in the prompt. E.g. `"system_prd": "path/to/prd"` (see `phase_1` in the example configuration) means that the contents of the file located at `path/to/prd` will be accessible in the prompt using `{{ system_prd }}`.
-- `path`: The path (relative to the prompt directory) of the phase prompt and, optionally, the schema file.
+- `path`: The path (relative to the prompt directory) of the phase prompt(s) and, optionally, the schema file. Note that phases can contain multiple prompts (see [ MultiPrompt Phases](#multiprompt-phases)).
 - `schema`: Whether or not the output must adhere to a schema. This schema is expected to be readable in a `schema.json` file located in `path`. 
 - `output_path`: The path (relative to the artifact root), to which the output will be written.
 - `next`: The name of the phase which should be visited after this phase is completed. If empty or `finish`, MACGPi will terminate. A special `dynamic` value is reserved for LLM-decided phase flow. With this option, the LLM output will decide the next phase. If `dynamic` is used, the output schema MUST contain a `next` value, with the name of the next phase (or `finish` for termination), decided by the LLM. This means that `dynamic` can ONLY be used when the phase makes use of a schema.
@@ -131,3 +131,18 @@ An example configuration can be seen below.
     }
 }
 ```
+
+### Multiprompt phases
+
+In some cases, you might want to perform multiple distinct prompts in the same phase. For example, using Structured Chain-of-Thought (SCoT) requires two prompts, one for generating the SCoT and another for translating it to functional code. It can be argued that those two prompts belong to the same phase, the implementation phase.
+
+With MACGPi multiprompt phases are possible. By simply adding more template files to the `path` directory. All template files should have the format `template*.md`, that is, they should be markdown files starting with `template`. 
+
+MACGPi reads all files conforming to this structure and runs them **in alphabetical order**. It is therefore recommended, but not strictly enforced, to format the templates as follows:
+
+ - `template_01_<description>.md`
+ - `template_02_<description>.md`
+ - `template_03_<description>.md`
+ - etc.
+
+ This is to prevent confusion of execution order.

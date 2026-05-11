@@ -48,7 +48,7 @@ def temp_prompts_dir(temp_dir):
     plan_phase = os.path.join(prompts_dir, "01_plan")
     os.makedirs(plan_phase)
     with open(os.path.join(plan_phase, "template.md"), "w") as f:
-        f.write("# Plan phase\n{{ system_prd }}")
+        f.write("# Plan phase\n{{ system_prd }}\n{{ schema_format }}")
     with open(os.path.join(plan_phase, "schema.json"), "w") as f:
         json.dump({"type": "object"}, f)
 
@@ -62,7 +62,7 @@ def temp_prompts_dir(temp_dir):
     eval_phase = os.path.join(prompts_dir, "03_evaluate")
     os.makedirs(eval_phase)
     with open(os.path.join(eval_phase, "template.md"), "w") as f:
-        f.write("# Evaluate phase")
+        f.write("# Evaluate phase\n{{schema_format}}")
     with open(os.path.join(eval_phase, "schema.json"), "w") as f:
         json.dump({"type": "object"}, f)
 

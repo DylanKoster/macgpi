@@ -3,9 +3,6 @@ import json
 import logging
 import os
 
-
-import os
-
 logger = logging.getLogger(__name__)
 
 
@@ -89,7 +86,7 @@ def get_next_phase(phase_config: dict, output_dir: str) -> str | None:
     in the "next" field of the phase configuration, or it can be specified dynamically in the output of the phase, in
     which case the "next" field should be set to "dynamic".
     '''
-    next_phase:  str | None = phase_config.get("next", None)
+    next_phase: str | None = phase_config.get("next", None)
 
     if next_phase is None:
         return None
@@ -107,16 +104,17 @@ def get_next_phase(phase_config: dict, output_dir: str) -> str | None:
         output_content: str = json.load(f)
 
     logger.debug(
-        f"Inferred phase: {output_content['next']} from output content at {output_path}:\n{json.dumps(output_content, indent=4)}")
+        f"Inferred phase: {output_content['next']} from output content at {output_path}:\n{json.dumps(output_content,
+                                                                                                      indent=4)}")
 
     return output_content["next"]
 
 
 def get_phase_prompts(phase_path: str) -> list[str]:
     '''
-    Gets the prompts for a phase from the given phase path. The prompts are expected to be in a file called "template.md"
-    in the phase directory. If the "template.md" file contains multiple prompts, they should be separated by the string
-    "<!-- PROMPT SEPARATOR -->".
+    Gets the prompts for a phase from the given phase path. The prompts are expected to be in a file called
+    "template.md" in the phase directory. If the "template.md" file contains multiple prompts, their names should all
+    start with template. The function returns a list of prompt file names, sorted in alphabetical order.
     '''
     files: list[str] = os.listdir(phase_path)
     prompt_files: list[str] = [file for file in files if file.startswith(

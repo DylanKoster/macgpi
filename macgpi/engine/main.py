@@ -95,19 +95,20 @@ def macgpi(
 
         logger.debug("Done!")
 
-        phase: str = list(phases_config.keys())[0]
-        max_phase_visits: dict = macgpi_config["max_phase_visits"]
         phase_visits: dict = {phase_name: 0 for phase_name in phases_config.keys()}
+        phase: str = list(phases_config.keys())[0]
         while not is_finished_phase(phase):
             logger.info(f"Starting phase {phase}...")
-            phase_visits[phase] += 1
-            if (phase_visits[phase] > max_phase_visits.get(phase, 1)):
-                logger.info(f"Phase {phase} has been visited more than the maximum allowed number of times. Stopping pipeline...")
-                break
             
             phase_config: dict = phases_config[phase]
             logger.debug(f"Phase config for phase {phase}:\n{json.dumps(phase_config, indent=4)}")
-
+            
+            phase_visits[phase] += 1
+            max_visits: int = phase_config.get("max_visits", 1)
+            if (phase_visits[phase] > max_visits):
+                logger.info(f"Phase {phase} has been visited more than the maximum allowed number of times ({max_visits}). Stopping pipeline...")
+                break
+            
             output_path: str | None = output_dir
             if "output_path" in phase_config.keys():
                 output_path = output_dir + "/" + phase_config["output_path"]
@@ -115,7 +116,7 @@ def macgpi(
             inputs: dict = read_phase_inputs(phase_config["inputs"], output_dir)
             
             template_output: str = templateManager.render(phase_config["path"], output_path=output_path, **inputs)
-            agentManager.run(template_output)
+            # agentManager.run(template_output)
 
             logger.info(f"Finished phase {phase}.")
 

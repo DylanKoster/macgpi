@@ -93,9 +93,7 @@ Fully customizing the MACGPi pipeline is possibly by editing the phase config (d
 
 ### Configuration format
 
-The configuration is a JSON format, containing two top-level objects, `max_phase_visits`, and `phases`.
-
-`max_phase_visits` contains a list of phases and the maximum allowed times such a phase is allowed to be visited. This is necessary to prevent infinite loops from occuring. When a phase is visited more times than defined in this object, the pipeline quits. If a phase does not exists in this object, it is only allowed to be visited once.
+The configuration is a JSON format, containing a single top-level objects, `phases`.
 
 The `phases` object contains the definitions of all MACGPi phases. The first phase in this object is the entry point for the pipeline. After that the definitions decide the flow of the pipeline. Each phase object defines its inputs, outputs, subsequent phase, prompt location, etc. A full list of object properties is shown below.
 
@@ -104,15 +102,12 @@ The `phases` object contains the definitions of all MACGPi phases. The first pha
 - `schema`: Whether or not the output must adhere to a schema. This schema is expected to be readable in a `schema.json` file located in `path`. 
 - `output_path`: The path (relative to the artifact root), to which the output will be written.
 - `next`: The name of the phase which should be visited after this phase is completed. If empty or `finish`, MACGPi will terminate. A special `dynamic` value is reserved for LLM-decided phase flow. With this option, the LLM output will decide the next phase. If `dynamic` is used, the output schema MUST contain a `next` value, with the name of the next phase (or `finish` for termination), decided by the LLM. This means that `dynamic` can ONLY be used when the phase makes use of a schema.
+- `max_visits`: The maximum amount of times a phase is allowed to be visited. If this limit is exceeded, the pipeline stops. If not provided, a maximum of 1 is inferred.
 
 An example configuration can be seen below.
 
 ```json
 {
-    "max_phase_visits": {
-        "phase_1": 1,
-        "phase_2": 5
-    },
     "phases": {
         "phase_1": {
             "inputs": {
@@ -130,7 +125,8 @@ An example configuration can be seen below.
             },
             "schema": false,
             "path": "phase_02/",
-            "next": "dynamic"
+            "next": "dynamic",
+            "max_visits": 5
         },
     }
 }

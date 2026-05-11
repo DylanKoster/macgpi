@@ -1,10 +1,4 @@
 {
-    "max_phase_visits": {
-        "plan": 1,
-        "implement": 1,
-        "evaluate": 3,
-        "revise": 3
-    },
     "phases": {
         "plan": {
             "inputs": {
@@ -32,7 +26,8 @@
             "schema": true,
             "path": "03_evaluate/",
             "output_path": "docs/evaluation_report.json",
-            "next": "dynamic"
+            "next": "revise",
+            "max_visits": 3
         },
         "revise": {
             "inputs": {
@@ -42,7 +37,8 @@
             },
             "schema": false,
             "path": "04_revise/",
-            "next": "evaluate"
+            "next": "evaluate",
+            "max_visits": 3
         }
     }
 }

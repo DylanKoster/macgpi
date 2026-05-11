@@ -1,4 +1,3 @@
-from enum import Enum
 import json
 import logging
 import os
@@ -7,7 +6,8 @@ import traceback
 from macgpi.engine.agent_manager import AgentManager
 from macgpi.engine.vllm import vllm_health
 from macgpi.engine.template_manager import TemplateManager
-from macgpi.engine.phase_utils import get_next_phase, get_phase_prompts, is_finished_phase, is_phase_dir, parse_phase_config, read_phase_inputs
+from macgpi.engine.phase_utils import (get_next_phase, get_phase_prompts, is_finished_phase, is_phase_dir,
+                                       parse_phase_config, read_phase_inputs)
 
 logger = logging.getLogger(__name__)
 
@@ -39,12 +39,13 @@ def macgpi(
             configuration will be used.
         agent_config (dict, optional): Configuration file for the agent. If None, the default mini-swe-agent
             configuration will be used.
-        phases_config (dict, optional): Configuration file for the MACGPi phases. If None, the default MACGPi configuration
+        phases_config (dict, optional): Configuration file for the MACGPi phases. If None, the default MACGPi
+            configuration
     '''
     try:
         if not vllm_health(model_host, model_port):
-            logger.error(f"Cannot reach vLLM server. Start a server on {model_host}:{model_port} or update the host " +
-                         "and port parameters accordingly.")
+            logger.error(f"Cannot reach vLLM server. Start a server on {model_host}:{model_port} or update the host "
+                         + "and port parameters accordingly.")
             return
 
         # Attempting vLLM host connection
@@ -77,9 +78,9 @@ def macgpi(
             schema_required: bool = phase_config["schema"]
 
             if (not is_phase_dir(phase_path, schema_required=schema_required)):
-                logger.error(f"Phase {phase} is not a valid phase directory in {templateManager.prompt_dir}. " +
-                             f"Please ensure that it contains both a template.md file" +
-                             f"{" and a schema.json file" if schema_required else ''}.")
+                logger.error(f"Phase {phase} is not a valid phase directory in {templateManager.prompt_dir}. "
+                             + "Please ensure that it contains both a template.md file"
+                             + f"{" and a schema.json file" if schema_required else ''}.")
                 return
 
         logger.debug("Pre-validation checks OK")
@@ -116,7 +117,8 @@ def macgpi(
             max_visits: int = phase_config.get("max_visits", 1)
             if (phase_visits[phase] > max_visits):
                 logger.info(
-                    f"Phase {phase} has been visited more than the maximum allowed number of times ({max_visits}). Stopping pipeline...")
+                    f"Phase {phase} has been visited more than the maximum allowed number of times ({max_visits}). "
+                    + "Stopping pipeline...")
                 break
 
             output_path: str | None = output_dir
@@ -138,6 +140,6 @@ def macgpi(
 
         logger.info(
             f"MACGPi execution finished, result copied to {output_dir}")
-    except Exception as e:
+    except Exception:
         logger.error(
             f"An error occured while executing MACGPi:\nError {traceback.format_exc()}")

@@ -5,13 +5,16 @@ from minisweagent.agents.default import DefaultAgent
 from minisweagent.models import get_model
 from minisweagent.environments.local import LocalEnvironment
 
+
 class AgentManager:
     '''
     Manages the execution of agents for different phases of the pipeline. The AgentManager is responsible for ownership
     of a singleton MiniSWEAgent instance, and executing the phase prompts.
     '''
+
     def __init__(self, model_name: str, model_host: str = "localhost", model_port: int = 8000, model_config_file: dict | None = None, agent_config_file: dict | None = None):
-        self.load_model_config(model_config_file, model_name, model_host, model_port)
+        self.load_model_config(
+            model_config_file, model_name, model_host, model_port)
         self.load_agent_config(agent_config_file)
 
         self.agent = DefaultAgent(
@@ -49,8 +52,9 @@ class AgentManager:
         }
 
         if model_config_file == None:
-            model_config_file = os.path.join(os.path.dirname(__file__), "..", "configs", "model.config.yaml")
-        
+            model_config_file = os.path.join(os.path.dirname(
+                __file__), "..", "configs", "model.config.yaml")
+
         with open(model_config_file, "r") as f:
             model_config: dict = yaml.safe_load(f)
 
@@ -65,7 +69,8 @@ class AgentManager:
             agent_config_file (str): The path to the agent configuration file.
         '''
         if agent_config_file == None:
-            agent_config_file = os.path.join(os.path.dirname(__file__), "..", "configs", "agent.config.yaml")   
+            agent_config_file = os.path.join(os.path.dirname(
+                __file__), "..", "configs", "agent.config.yaml")
 
         with open(agent_config_file, "r") as f:
             agent_config: dict = yaml.safe_load(f)

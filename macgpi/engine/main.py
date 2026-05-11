@@ -11,6 +11,7 @@ from macgpi.engine.phase_utils import get_next_phase, get_phase_prompts, is_fini
 
 logger = logging.getLogger(__name__)
 
+
 def macgpi(
     input: str,
     model_name: str,
@@ -47,15 +48,17 @@ def macgpi(
             return
 
         # Attempting vLLM host connection
-        logger.debug(f"Attempting to connect to model server at {model_host}:{model_port}...")
-        
+        logger.debug(
+            f"Attempting to connect to model server at {model_host}:{model_port}...")
+
         # Manager instantiations
         logger.debug("Instantiating managers.")
-        
-        templateManager: TemplateManager = TemplateManager(prompt_dir=prompt_dir)
+
+        templateManager: TemplateManager = TemplateManager(
+            prompt_dir=prompt_dir)
         agentManager: AgentManager = AgentManager(model_name, model_host=model_host, model_port=model_port,
                                                   model_config_file=model_config, agent_config_file=agent_config)
-        
+
         logger.debug("Done instantiating managers!")
         macgpi_config: dict = parse_phase_config(phases_config)
         phases_config: dict = macgpi_config["phases"]
@@ -65,56 +68,64 @@ def macgpi(
         phase: str = list(phases_config.keys())[0]
 
         # Test whether all phases contain valid phase directories
-        for phase in phases_config.keys(): 
+        for phase in phases_config.keys():
             logger.debug(f"Checking phase validity of phase \"{phase}\"")
 
             phase_config: dict = phases_config[phase]
-            phase_path: str = os.path.join(templateManager.prompt_dir, phase_config["path"])
+            phase_path: str = os.path.join(
+                templateManager.prompt_dir, phase_config["path"])
             schema_required: bool = phase_config["schema"]
 
             if (not is_phase_dir(phase_path, schema_required=schema_required)):
                 logger.error(f"Phase {phase} is not a valid phase directory in {templateManager.prompt_dir}. " +
-                             f"Please ensure that it contains both a template.md file" + 
+                             f"Please ensure that it contains both a template.md file" +
                              f"{" and a schema.json file" if schema_required else ''}.")
                 return
-                        
+
         logger.debug("Pre-validation checks OK")
 
         # Phase execution
         logger.info("Starting MACGPi execution")
 
-        logger.debug(f"Writing project description to output directory at {output_dir}...")
+        logger.debug(
+            f"Writing project description to output directory at {output_dir}...")
         # Write PRD to output dir
-        project_description_path: str = os.path.join(output_dir, "docs", "project_description.md")
-        
+        project_description_path: str = os.path.join(
+            output_dir, "docs", "project_description.md")
+
         if not os.path.exists(project_description_path):
-            os.makedirs(os.path.dirname(project_description_path), exist_ok=True)
+            os.makedirs(os.path.dirname(
+                project_description_path), exist_ok=True)
 
         with open(project_description_path, "w") as f:
             f.write(input)
 
         logger.debug("Done!")
 
-        phase_visits: dict = {phase_name: 0 for phase_name in phases_config.keys()}
+        phase_visits: dict = {
+            phase_name: 0 for phase_name in phases_config.keys()}
         phase: str = list(phases_config.keys())[0]
         while not is_finished_phase(phase):
             logger.info(f"Starting phase {phase}...")
-            
+
             phase_config: dict = phases_config[phase]
-            logger.debug(f"Phase config for phase {phase}:\n{json.dumps(phase_config, indent=4)}")
-            
+            logger.debug(
+                f"Phase config for phase {phase}:\n{json.dumps(phase_config, indent=4)}")
+
             phase_visits[phase] += 1
             max_visits: int = phase_config.get("max_visits", 1)
             if (phase_visits[phase] > max_visits):
-                logger.info(f"Phase {phase} has been visited more than the maximum allowed number of times ({max_visits}). Stopping pipeline...")
+                logger.info(
+                    f"Phase {phase} has been visited more than the maximum allowed number of times ({max_visits}). Stopping pipeline...")
                 break
-            
+
             output_path: str | None = output_dir
             if "output_path" in phase_config.keys():
                 output_path = output_dir + "/" + phase_config["output_path"]
 
-            inputs: dict = read_phase_inputs(phase_config["inputs"], output_dir)
-            
+            inputs: dict = read_phase_inputs(
+                phase_config["inputs"], output_dir)
+
             prompts: list[str] = get_phase_prompts(phase_config["path"])
             for prompt_file in prompts:
                 template_output: str = templateManager.render(phase_config["path"], prompt_file=prompt_file,
@@ -125,6 +136,8 @@ def macgpi(
 
             phase = get_next_phase(phase_config, output_dir=output_dir)
 
-        logger.info(f"MACGPi execution finished, result copied to {output_dir}")
+        logger.info(
+            f"MACGPi execution finished, result copied to {output_dir}")
     except Exception as e:
-        logger.error(f"An error occured while executing MACGPi:\nError {traceback.format_exc()}")
+        logger.error(
+            f"An error occured while executing MACGPi:\nError {traceback.format_exc()}")

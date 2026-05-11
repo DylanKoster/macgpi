@@ -5,6 +5,7 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined, Template
 
 logger = logging.getLogger(__name__)
 
+
 class TemplateManager:
     '''
     Manages the loading and rendering of templates for different phases of the pipeline. Templates are expected to be
@@ -16,10 +17,12 @@ class TemplateManager:
         prompt_dir (str, optional): The directory where the prompt templates are located. If not provided, it defaults
             to a "prompts" directory located in the parent directory of this module.
     '''
+
     def __init__(self, prompt_dir: str | None = None):
         # Resolve prompts directory relative to this module if not provided
         if prompt_dir is None:
-            prompt_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "prompts"))
+            prompt_dir = os.path.normpath(os.path.join(
+                os.path.dirname(__file__), "..", "prompts"))
 
         self.prompt_dir = prompt_dir
 
@@ -50,7 +53,8 @@ class TemplateManager:
             with open(schema_path, "r") as f:
                 schema_format = f.read()
 
-        logger.debug(f"Rendering template for phase {phase_dir} at path {template_path} {f"with schema at path {schema_path}" if schema_format is not None else ""}")
+        logger.debug(
+            f"Rendering template for phase {phase_dir} at path {template_path} {f"with schema at path {schema_path}" if schema_format is not None else ""}")
 
         template: Template = self.env.get_template(template_path)
 

@@ -22,7 +22,7 @@ def macgpi(
     model_config: dict | None = None,
     agent_config: dict | None = None,
     phases_config: dict | None = None,
-):
+) -> bool:
     '''
     Entry point for the MACGPi pipeline. This function orchestrates the execution of the pipeline executing the
     specified MACGPi phases on the (vLLM) hosted LLM.
@@ -40,13 +40,13 @@ def macgpi(
         agent_config (dict, optional): Configuration file for the agent. If None, the default mini-swe-agent
             configuration will be used.
         phases_config (dict, optional): Configuration file for the MACGPi phases. If None, the default MACGPi
-            configuration
+            configuration will be used.
     '''
     try:
         if not vllm_health(model_host, model_port):
             logger.error(f"Cannot reach vLLM server. Start a server on {model_host}:{model_port} or update the host "
                          + "and port parameters accordingly.")
-            return
+            return False
 
         # Attempting vLLM host connection
         logger.debug(
@@ -81,7 +81,7 @@ def macgpi(
                 logger.error(f"Phase {phase} is not a valid phase directory in {templateManager.prompt_dir}. "
                              + "Please ensure that it contains both a template.md file"
                              + f"{" and a schema.json file" if schema_required else ''}.")
-                return
+                return False
 
         logger.debug("Pre-validation checks OK")
 
@@ -128,7 +128,7 @@ def macgpi(
             inputs: dict = read_phase_inputs(
                 phase_config["inputs"], output_dir)
 
-            prompts: list[str] = get_phase_prompts(phase_config["path"])
+            prompts: list[str] = get_phase_prompts(os.path.join(templateManager.prompt_dir, phase_config["path"]))
             for prompt_file in prompts:
                 template_output: str = templateManager.render(phase_config["path"], prompt_file=prompt_file,
                                                               output_path=output_path, **inputs)
@@ -140,6 +140,8 @@ def macgpi(
 
         logger.info(
             f"MACGPi execution finished, result copied to {output_dir}")
+        return True
     except Exception:
         logger.error(
             f"An error occured while executing MACGPi:\nError {traceback.format_exc()}")
+        return False

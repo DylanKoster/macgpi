@@ -5,28 +5,28 @@ on:
     branches:
       - main
 
+env:
+  python-version: 3.12
+
 jobs:
   test:
     name: Tests
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.12]
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python ${{ env.python-version }}
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ env.python-version }}
 
       - name: Cache pip dependencies
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements.txt') }}
+          key: pip-${{ env.python-version }}-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
-            pip-${{ matrix.python-version }}-
+            pip-${{ env.python-version }}-
 
       - name: Install dependencies
         run: |

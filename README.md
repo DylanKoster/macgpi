@@ -103,6 +103,7 @@ The `phases` object contains the definitions of all MACGPi phases. The first pha
 - `output_path`: The path (relative to the artifact root), to which the output will be written.
 - `next`: The name of the phase which should be visited after this phase is completed. If empty or `finish`, MACGPi will terminate. A special `dynamic` value is reserved for LLM-decided phase flow. With this option, the LLM output will decide the next phase. If `dynamic` is used, the output schema MUST contain a `next` value, with the name of the next phase (or `finish` for termination), decided by the LLM. This means that `dynamic` can ONLY be used when the phase makes use of a schema.
 - `max_visits`: The maximum amount of times a phase is allowed to be visited. If this limit is exceeded, the pipeline stops. If not provided, a maximum of 1 is inferred.
+- `max_visits_exceeded_next`: The phase that will be entered in the `max_visits` is exceeded. This should only happen if `next` is dynamic, or `next` is the current phase.
 
 An example configuration can be seen below.
 
@@ -126,7 +127,8 @@ An example configuration can be seen below.
             "schema": false,
             "path": "phase_02/",
             "next": "dynamic",
-            "max_visits": 5
+            "max_visits": 5,
+            "max_visits_exceeded_next": "finish
         },
     }
 }

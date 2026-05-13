@@ -66,9 +66,15 @@ def temp_prompts_dir(temp_dir):
     eval_phase = os.path.join(prompts_dir, "03_evaluate")
     os.makedirs(eval_phase)
     with open(os.path.join(eval_phase, "template.md"), "w") as f:
-        f.write("# Evaluate phase\n{{ schema_format }}")
+        f.write("# Evaluate phase\n{{ system_prd }}\n{{ schema_format }}")
     with open(os.path.join(eval_phase, "schema.json"), "w") as f:
         json.dump({"type": "object"}, f)
+
+    # Create evaluate phase
+    revise_phase = os.path.join(prompts_dir, "04_revise")
+    os.makedirs(revise_phase)
+    with open(os.path.join(revise_phase, "template.md"), "w") as f:
+        f.write("# Revise phase\n{{ system_prd }}\n{{ implementation_plan }}\n{{ evaluation_report }}")
 
     # Create invalid phase 1
     eval_phase = os.path.join(prompts_dir, "04_invalid")
@@ -78,7 +84,7 @@ def temp_prompts_dir(temp_dir):
     eval_phase = os.path.join(prompts_dir, "05_invalid")
     os.makedirs(eval_phase)
     with open(os.path.join(eval_phase, "template.md"), "w") as f:
-        f.write("# Evaluate phase")
+        f.write("# Invalid phase")
 
     return prompts_dir
 
@@ -104,7 +110,29 @@ def sample_phase_config(temp_dir):
                 },
                 "schema": False,
                 "path": "02_implement/",
-                "next": "finish"
+                "next": "evaluate"
+            },
+            "evaluate": {
+                "inputs": {
+                    "system_prd": "docs/project_description.md"
+                },
+                "schema": True,
+                "path": "03_evaluate/",
+                "output_path": "docs/evaluation_report.json",
+                "next": "revise",
+                "max_visits": 3,
+                "max_visits_exceeded_next": "finish"
+            },
+            "revise": {
+                "inputs": {
+                    "system_prd": "docs/project_description.md",
+                    "implementation_plan": "docs/plan.json",
+                    "evaluation_report": "docs/evaluation_report.json"
+                },
+                "schema": False,
+                "path": "04_revise/",
+                "next": "evaluate",
+                "max_visits": 3
             }
         }
     }
@@ -130,5 +158,9 @@ def sample_output_dir(temp_dir):
     # Create plan output
     with open(os.path.join(docs_dir, "plan.json"), "w") as f:
         json.dump({"plan": "test plan"}, f)
+
+    # Create evaluation report
+    with open(os.path.join(docs_dir, "evaluation_report.json"), "w") as f:
+        json.dump({"evaluation": "test evaluation"}, f)
 
     return output_dir

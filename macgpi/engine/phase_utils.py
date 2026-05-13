@@ -32,8 +32,12 @@ def parse_phase_config(config_file: str | None) -> dict:
         config_file = os.path.join(os.path.dirname(
             __file__), "..", "configs", "macgpi_phases.json")
 
-    with open(config_file, "r") as f:
-        config: dict = json.load(f)
+    try:
+        with open(config_file, "r") as f:
+            config: dict = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        logger.error(f"Error occurred while parsing phase configuration file at {config_file}: {e}")
+        return None
 
     return config
 
@@ -88,7 +92,7 @@ def is_finished_phase(phase: str) -> bool:
     return phase is None or phase == "finish"
 
 
-def get_next_phase(phase_config: dict, output_dir: str) -> str | None:
+def get_next_phase(phase_config: dict, output_dir: str, has_exceeded_max_visits: bool = False) -> str | None:
     '''
     Gets the next phase to execute from the given phase configuration. The next phase can either be specified statically
     in the "next" field of the phase configuration, or it can be specified dynamically in the output of the phase, in
@@ -98,6 +102,10 @@ def get_next_phase(phase_config: dict, output_dir: str) -> str | None:
 
     if next_phase is None:
         return None
+
+    # If max_visits has been exceeded, return max_visits_exceeded_next if it exists.
+    if has_exceeded_max_visits:
+        return phase_config.get("max_visits_exceeded_next", None)
 
     if next_phase != "dynamic":
         return next_phase

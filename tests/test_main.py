@@ -1,6 +1,6 @@
 import os
 from unittest.mock import patch, MagicMock
-from macgpi.engine.main import macgpi
+from macgpi.engine.main import MACGPi
 
 
 class TestMacgpiMain:
@@ -11,11 +11,12 @@ class TestMacgpiMain:
         """Test that macgpi returns early if vLLM is unhealthy."""
         mock_health.return_value = False
 
-        result = macgpi(
+        macgpi: MACGPi = MACGPi(
             input="test input",
             model_name="test-model",
             output_dir=temp_dir
         )
+        result: bool = macgpi.run()
 
         assert result is False
         mock_health.assert_called_once()
@@ -43,7 +44,7 @@ class TestMacgpiMain:
 
         output_dir = os.path.join(temp_dir, "output")
 
-        macgpi(
+        macgpi: MACGPi = MACGPi(
             input="test input",
             model_name="test-model",
             output_dir=output_dir,
@@ -52,6 +53,7 @@ class TestMacgpiMain:
             agent_config=None,
             phases_config=None
         )
+        macgpi.run()
 
         # Check that docs directory was created
         assert os.path.exists(os.path.join(output_dir, "docs"))
@@ -80,7 +82,7 @@ class TestMacgpiMain:
         output_dir = os.path.join(temp_dir, "output")
         test_input = "Build a web application"
 
-        macgpi(
+        macgpi: MACGPi = MACGPi(
             input=test_input,
             model_name="test-model",
             output_dir=output_dir,
@@ -89,6 +91,7 @@ class TestMacgpiMain:
             agent_config=None,
             phases_config=None
         )
+        macgpi.run()
 
         # Check that project description was written
         prd_path = os.path.join(output_dir, "docs", "project_description.md")
@@ -121,13 +124,15 @@ class TestMacgpiMain:
         mock_agent_mgr.return_value = mock_agent
 
         # Should complete validation successfully
-        result = macgpi(
+        macgpi: MACGPi = MACGPi(
             input="test",
             model_name="test-model",
             output_dir=sample_output_dir,
             prompt_dir=temp_prompts_dir,
             phases_config=sample_phase_config
         )
+        result = macgpi.run()
+
         assert result is True
 
     @patch("macgpi.engine.main.parse_phase_config")
@@ -170,13 +175,15 @@ class TestMacgpiMain:
         mock_parse_config.return_value = config
 
         # Should return False due to invalid phase
-        result = macgpi(
+        macgpi: MACGPi = MACGPi(
             input="test",
             model_name="test-model",
             output_dir=sample_output_dir,
             prompt_dir=temp_prompts_dir,
             phases_config=None
         )
+        result = macgpi.run()
+
         assert result is False
 
     @patch("macgpi.engine.main.AgentManager")
@@ -202,17 +209,24 @@ class TestMacgpiMain:
         mock_agent = MagicMock()
         mock_agent_mgr.return_value = mock_agent
 
-        result = macgpi(
+        macgpi: MACGPi = MACGPi(
             input="test",
             model_name="test-model",
             output_dir=sample_output_dir,
             prompt_dir=temp_prompts_dir,
             phases_config=sample_phase_config
         )
+        result = macgpi.run()
 
         # Verify agent was called
         assert result is True
         mock_agent.run.assert_called()
+
+        phase_visits = macgpi.get_phase_visits()
+        assert phase_visits["plan"] == 1
+        assert phase_visits["implement"] == 1
+        assert phase_visits["evaluate"] == 3
+        assert phase_visits["revise"] == 3
 
 
 class TestMacgpiErrorHandling:
@@ -224,11 +238,12 @@ class TestMacgpiErrorHandling:
         mock_health.return_value = True
 
         # Should not raise exception, but return False
-        result = macgpi(
+        macgpi: MACGPi = MACGPi(
             input="test",
             model_name="test-model",
             output_dir=temp_dir,
             phases_config="/nonexistent/path/config.json"
         )
+        result = macgpi.run()
 
         assert result is False

@@ -39,7 +39,8 @@ class TestTemplateManagerRender:
 
         result = manager.render(
             "01_plan/",
-            system_prd="Test project description"
+            system_prd="Test project description",
+            template_file="template.md",
         )
 
         assert "Test project description" in result
@@ -50,7 +51,8 @@ class TestTemplateManagerRender:
         manager = TemplateManager(prompt_dir=temp_prompts_dir)
 
         # Provide required system_prd variable
-        result = manager.render("01_plan/", system_prd="Test project")
+        result = manager.render("01_plan/",
+                                template_file="template.md", system_prd="Test project")
 
         # Verify template renders with schema available
         assert "# Plan phase" in result
@@ -64,8 +66,9 @@ class TestTemplateManagerRender:
         # 02_implement doesn't have schema
         result = manager.render(
             "02_implement/",
-            implementation_plan="test plan",
-            system_prd="Project description"
+            system_prd="Project description",
+            template_file="template_01.md",
+            implementation_plan="test plan"
         )
 
         assert "test plan" in result
@@ -78,6 +81,7 @@ class TestTemplateManagerRender:
         result = manager.render(
             "02_implement/",
             system_prd="Project description",
+            template_file="template_02.md",
             implementation_plan="Implementation details"
         )
 
@@ -90,11 +94,18 @@ class TestTemplateManagerRender:
 
         # 01_plan expects system_prd to be provided
         with pytest.raises(UndefinedError):
-            manager.render("01_plan/")
+            manager.render("01_plan/", template_file="template.md")
 
     def test_render_with_nonexistent_template(self, temp_prompts_dir):
         """Test rendering nonexistent template raises error."""
         manager = TemplateManager(prompt_dir=temp_prompts_dir)
 
         with pytest.raises(Exception):  # Jinja2 will raise TemplateNotFound
+            manager.render("nonexistent/", template_file="template.md")
+
+    def test_render_with_no_template_provided(self, temp_prompts_dir):
+        """Test rendering nonexistent template raises error."""
+        manager = TemplateManager(prompt_dir=temp_prompts_dir)
+
+        with pytest.raises(TypeError):
             manager.render("nonexistent/")

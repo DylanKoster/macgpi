@@ -55,8 +55,12 @@ def temp_prompts_dir(temp_dir):
     # Create implement phase
     impl_phase = os.path.join(prompts_dir, "02_implement")
     os.makedirs(impl_phase)
-    with open(os.path.join(impl_phase, "template.md"), "w") as f:
-        f.write("# Implement phase\n{{ system_prd }}\n{{ implementation_plan }}")
+    with open(os.path.join(impl_phase, "template_01.md"), "w") as f:
+        f.write(
+            "# Implement phase\n{{ system_prd }}\n{{ implementation_plan }}")
+    with open(os.path.join(impl_phase, "template_02.md"), "w") as f:
+        f.write(
+            "# Implement phase\n{{ system_prd }}\n{{ implementation_plan }}")
 
     # Create evaluate phase
     eval_phase = os.path.join(prompts_dir, "03_evaluate")

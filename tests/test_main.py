@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 from macgpi.engine.main import macgpi
 
 
-class TestMacgpiBasic:
+class TestMacgpiMain:
     """Basic tests for macgpi function."""
 
     @patch("macgpi.engine.main.vllm_health")
@@ -97,11 +97,6 @@ class TestMacgpiBasic:
             content = f.read()
         assert content == test_input
 
-
-class TestMacgpiValidation:
-    """Tests for macgpi validation logic."""
-
-    @patch("macgpi.engine.main.parse_phase_config")
     @patch("macgpi.engine.main.AgentManager")
     @patch("macgpi.engine.main.TemplateManager")
     @patch("macgpi.engine.main.vllm_health")
@@ -110,9 +105,9 @@ class TestMacgpiValidation:
         mock_health,
         mock_template_mgr,
         mock_agent_mgr,
-        mock_parse_config,
         temp_prompts_dir,
-        temp_dir
+        sample_phase_config,
+        sample_output_dir
     ):
         """Test that macgpi validates phase directories."""
         mock_health.return_value = True
@@ -125,31 +120,13 @@ class TestMacgpiValidation:
         mock_agent = MagicMock()
         mock_agent_mgr.return_value = mock_agent
 
-        # Create valid phase config that only has one phase
-        config = {
-            "phases": {
-                "plan": {
-                    "inputs": {
-                        "system_prd": "docs/project_description.md"
-                    },
-                    "schema": True,
-                    "path": "01_plan/",
-                    "output_path": "docs/plan.json",
-                    "next": "finish"
-                }
-            }
-        }
-        mock_parse_config.return_value = config
-
-        output_dir = os.path.join(temp_dir, "output")
-
         # Should complete validation successfully
         result = macgpi(
             input="test",
             model_name="test-model",
-            output_dir=output_dir,
+            output_dir=sample_output_dir,
             prompt_dir=temp_prompts_dir,
-            phases_config=None
+            phases_config=sample_phase_config
         )
         assert result is True
 
@@ -164,7 +141,7 @@ class TestMacgpiValidation:
         mock_agent_mgr,
         mock_parse_config,
         temp_prompts_dir,
-        temp_dir
+        sample_output_dir,
     ):
         """Test that macgpi fails on invalid phase directories."""
         mock_health.return_value = True
@@ -192,40 +169,30 @@ class TestMacgpiValidation:
         }
         mock_parse_config.return_value = config
 
-        output_dir = os.path.join(temp_dir, "output")
-
         # Should return False due to invalid phase
         result = macgpi(
             input="test",
             model_name="test-model",
-            output_dir=output_dir,
+            output_dir=sample_output_dir,
             prompt_dir=temp_prompts_dir,
             phases_config=None
         )
         assert result is False
 
-
-class TestMacgpiPhaseExecution:
-    """Tests for macgpi phase execution."""
-
-    @patch("macgpi.engine.main.get_phase_prompts")
     @patch("macgpi.engine.main.AgentManager")
     @patch("macgpi.engine.main.TemplateManager")
-    @patch("macgpi.engine.main.parse_phase_config")
     @patch("macgpi.engine.main.vllm_health")
     def test_macgpi_executes_phases_in_order(
         self,
         mock_health,
-        mock_parse_config,
         mock_template_mgr,
         mock_agent_mgr,
-        mock_get_prompts,
-        temp_dir,
-        temp_prompts_dir
+        temp_prompts_dir,
+        sample_output_dir,
+        sample_phase_config
     ):
         """Test that phases are executed in correct order."""
         mock_health.return_value = True
-        mock_get_prompts.return_value = ["template.md"]
 
         # Create actual template manager
         from macgpi.engine.template_manager import TemplateManager
@@ -235,28 +202,12 @@ class TestMacgpiPhaseExecution:
         mock_agent = MagicMock()
         mock_agent_mgr.return_value = mock_agent
 
-        config = {
-            "phases": {
-                "plan": {
-                    "inputs": {
-                        "system_prd": "docs/project_description.md"
-                    },
-                    "schema": True,
-                    "path": "01_plan/",
-                    "output_path": "docs/plan.json",
-                    "next": "finish"
-                }
-            }
-        }
-        mock_parse_config.return_value = config
-
-        output_dir = os.path.join(temp_dir, "output")
-
         result = macgpi(
             input="test",
             model_name="test-model",
-            output_dir=output_dir,
-            prompt_dir=temp_prompts_dir
+            output_dir=sample_output_dir,
+            prompt_dir=temp_prompts_dir,
+            phases_config=sample_phase_config
         )
 
         # Verify agent was called

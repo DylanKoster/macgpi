@@ -125,6 +125,7 @@ def get_phase_prompts(phase_path: str) -> list[str]:
     start with template. The function returns a list of prompt file names, sorted in alphabetical order.
     '''
     files: list[str] = os.listdir(phase_path)
+
     prompt_files: list[str] = [file for file in files if file.startswith(
         "template") and file.endswith(".md")]
     prompt_files.sort()

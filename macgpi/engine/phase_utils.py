@@ -43,8 +43,16 @@ def is_phase_dir(path: str, schema_required: bool = True) -> bool:
     Tests whether the given path is a valid phase directory. A directory is a valid phase directory iff it contains both
     a "template.md" file. If schema_required is true, it must also contain a "schema.json" file.
     '''
-    is_phase_dir: bool = (os.path.isdir(path)
-                          and os.path.isfile(os.path.join(path, "template.md")))
+    is_phase_dir: bool = os.path.isdir(path)
+    if not is_phase_dir:
+        return False
+
+    # Test if there is at least 1 template file.
+    files: list[str] = os.listdir(path)
+    prompt_files: list[str] = [file for file in files if file.startswith(
+        "template") and file.endswith(".md")]
+    is_phase_dir = is_phase_dir and len(prompt_files) > 0
+
     if schema_required:
         is_phase_dir = is_phase_dir and os.path.isfile(
             os.path.join(path, "schema.json"))
@@ -104,8 +112,8 @@ def get_next_phase(phase_config: dict, output_dir: str) -> str | None:
         output_content: str = json.load(f)
 
     logger.debug(
-        f"Inferred phase: {output_content['next']} from output content at {output_path}:\n{json.dumps(output_content,
-                                                                                                      indent=4)}")
+        f"Inferred phase: {output_content['next']} from output content at {output_path}: \n{json.dumps(output_content,
+                                                                                                       indent=4)}")
 
     return output_content["next"]
 

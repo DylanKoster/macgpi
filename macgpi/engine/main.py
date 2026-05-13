@@ -128,9 +128,12 @@ def macgpi(
             inputs: dict = read_phase_inputs(
                 phase_config["inputs"], output_dir)
 
-            prompts: list[str] = get_phase_prompts(os.path.join(templateManager.prompt_dir, phase_config["path"]))
+            prompts: list[str] = get_phase_prompts(os.path.join(
+                templateManager.prompt_dir, phase_config["path"]))
             for prompt_file in prompts:
-                template_output: str = templateManager.render(phase_config["path"], prompt_file=prompt_file,
+                logger.info(
+                    f"Running prompt {prompt_file} for phase {phase}...")
+                template_output: str = templateManager.render(phase_config["path"], template_file=prompt_file,
                                                               output_path=output_path, **inputs)
                 agentManager.run(template_output)
 

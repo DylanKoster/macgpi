@@ -33,7 +33,7 @@ class TemplateManager:
             lstrip_blocks=True,
         )
 
-    def render(self, phase_dir: str, **kwargs) -> str:
+    def render(self, phase_dir: str, template_file: str, **kwargs) -> str:
         '''
         Render the template for the given phase with the provided keyword arguments.
         The template is searched in the prompts directory under a subdirectory named after the phase,
@@ -42,10 +42,11 @@ class TemplateManager:
 
         Parameters:
             phase_dir (str): The path to the phase directory whose template should be rendered.
+            template_file (str): The name of the template file to render.
             **kwargs: Additional keyword arguments to pass to the template for rendering.
         '''
         # Use template name relative to the loader root
-        template_path = os.path.join(phase_dir, "template.md")
+        template_path = os.path.join(phase_dir, template_file)
         schema_path = os.path.join(self.prompt_dir, phase_dir, "schema.json")
 
         schema_format: str | None = None

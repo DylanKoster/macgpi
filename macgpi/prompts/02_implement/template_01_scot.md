@@ -18,6 +18,10 @@ However, you must **not** write production source code yet. Instead, write SCoT 
 
 Generate structured implementation-reasoning artifacts that translate the PRD and implementation plan into code-oriented solving processes.
 
+All SCoT artifacts in this stage must be **unit-level SCoT**. This means each artifact must decompose reasoning to the level of concrete implementation units (for example: functions, methods, handlers, validators, mappers, query builders, and test cases), not only file-level summaries.
+
+All unit-level SCoT artifacts must also use **ReAct-style reasoning** (Reason + Act + Observe) to make decision-making explicit and verifiable.
+
 Each SCoT artifact must be written using program-structure concepts from Structured Chain-of-Thought prompting:
 
 1. **Input / Output Structure**
@@ -26,6 +30,42 @@ Each SCoT artifact must be written using program-structure concepts from Structu
 4. **Loop Structure**
 
 The purpose of these artifacts is to make the later implementation phase precise, ordered, and testable.
+
+For each implementation unit, represent reasoning as a ReAct loop:
+
+```text
+Thought:
+  - What is the next sub-problem to solve and why.
+
+Action:
+  - Concrete implementation action to perform.
+
+Observation:
+  - Expected result, validation signal, or feedback from the action.
+```
+
+Use as many ReAct iterations as needed per unit until the unit reaches a clear completion condition.
+
+Use the following unit-level SCoT example as a reference for granularity and structure:
+
+```text
+Example:
+An SCoT for the following function declaration:
+
+def first_Repeated_Char(str):
+"""
+Write a python function to find the first repeated
+character in a given string.
+"""
+Pass
+
+Input: str: a string
+Output: ch: a repeated character in str
+1: for each character ch in str:
+2: if ch appears more than once in str:
+3: return ch
+4: return None
+```
 
 ## Core File-Writing Requirement
 
@@ -145,6 +185,16 @@ The index file must not contain final source code.
 ## 3. Write Per-File SCoT Artifacts
 
 Each per-file SCoT artifact must use the structure below.
+
+Within each file artifact, include unit-level SCoT breakdowns for the concrete implementation units that will exist in that file.
+
+Examples of units to cover when applicable:
+
+- Source files: functions, classes, methods, handlers, service operations, utility helpers
+- Test files: test groups, individual test cases, fixtures, setup/teardown helpers
+- Config/script files: loaders, validators, command steps, environment resolution logic
+
+For each unit, include at least one ReAct iteration and preferably multiple iterations when there are dependencies, branches, or non-trivial validation steps.
 
 ---
 
@@ -383,6 +433,11 @@ Loops:
 
 Validation:
   - ...
+
+ReAct summary:
+  - Thought: ...
+  - Action: ...
+  - Observation: ...
 
 Ready for code generation:
   - Yes / No

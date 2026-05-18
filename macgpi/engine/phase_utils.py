@@ -3,6 +3,8 @@ import json
 import logging
 import os
 
+import jsonschema
+
 logger = logging.getLogger(__name__)
 
 
@@ -135,3 +137,16 @@ def get_phase_prompts(phase_path: str) -> list[str]:
         "template") and file.endswith(".md")]
     prompt_files.sort()
     return prompt_files
+
+
+def validate_output_file(output_content: dict, schema: dict) -> bool:
+    '''
+    Validates the output of a phase against the given schema. The function returns true if the output is valid
+    according to the schema, and false otherwise.
+    '''
+    try:
+        jsonschema.validate(instance=output_content, schema=schema)
+        return True
+    except jsonschema.ValidationError as e:
+        logger.error(f"Output validation error: {e}")
+        return False

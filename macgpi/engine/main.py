@@ -14,41 +14,41 @@ logger = logging.getLogger(__name__)
 
 class MACGPi:
     def __init__(self,
-                 input: str,
+                 input_description: str,
                  model_name: str,
                  output_dir: str,
                  model_host: str = "localhost",
                  model_port: int = 8000,
                  prompt_dir: str | None = None,
-                 model_config: dict | None = None,
-                 agent_config: dict | None = None,
-                 phases_config: dict | None = None,
+                 model_config_file: str | None = None,
+                 agent_config_file: str | None = None,
+                 phases_config_file: str | None = None,
                  ):
         '''
         Initializer for the MACGPi object.
 
         Parameters:
-            input (str): The project/issue description to be processed by the pipeline.
+            input_description (str): The project/issue description to be processed by the pipeline.
             model_name (str): The name of the language model to use, as understood by mini-swe-agent.
             output_dir (str): The path to the target project directory where the output will be generated.
             model_host (str, optional): The host address of the vLLM server. Defaults to "localhost".
             model_port (int, optional): The port number of the vLLM server. Defaults to 8000.
             prompt_dir (str, optional): The directory under which the valid phase prompts and schemas are located. If
             None, it defaults to a "prompts" directory located in the parent directory of this module.
-            model_config (dict, optional): Configuration file for the model. If None, the default mini-swe-agent
-                configuration will be used.
-            agent_config (dict, optional): Configuration file for the agent. If None, the default mini-swe-agent
-                configuration will be used.
-            phases_config (dict, optional): Configuration file for the MACGPi phases. If None, the default MACGPi
-                configuration will be used.
+            model_config_file (str, optional): Path to the configuration file for the model. If None, the default
+                mini-swe-agent configuration will be used.
+            agent_config_file (str, optional): Path to the configuration file for the agent. If None, the default
+                mini-swe-agent configuration will be used.
+            phases_config_file (str, optional): Path to the configuration file for the MACGPi phases. If None, the
+                default MACGPi configuration will be used.
         '''
-        self.input = input
+        self.input_description = input_description
         self.model_name = model_name
         self.output_dir = output_dir
         self.model_host = model_host
         self.model_port = model_port
         self.prompt_dir = prompt_dir
-        self.phases_config = phases_config
+        self.phases_config_file = phases_config_file
 
         self.phases_visits = {}
 
@@ -57,8 +57,8 @@ class MACGPi:
             self.templateManager: TemplateManager = TemplateManager(
                 prompt_dir=self.prompt_dir)
             self.agentManager: AgentManager = AgentManager(self.model_name, model_host=model_host,
-                                                           model_port=model_port, model_config_file=model_config,
-                                                           agent_config_file=agent_config)
+                                                           model_port=model_port, model_config_file=model_config_file,
+                                                           agent_config_file=agent_config_file)
         except Exception:
             logger.error(f"An error occurred while initializing MACGPi:\nError {traceback.format_exc()}")
 
@@ -84,7 +84,7 @@ class MACGPi:
             # -------------------------------------
             logger.debug("Parsing phase configuration...")
 
-            macgpi_config: dict = parse_phase_config(self.phases_config)
+            macgpi_config: dict = parse_phase_config(self.phases_config_file)
             phases_config: dict = macgpi_config["phases"]
             self.phase_visits: dict = {
                 phase_name: 0 for phase_name in phases_config.keys()}
@@ -133,7 +133,7 @@ class MACGPi:
                     project_description_path), exist_ok=True)
 
             with open(project_description_path, "w") as f:
-                f.write(self.input)
+                f.write(self.input_description)
 
             logger.debug("Done!")
 

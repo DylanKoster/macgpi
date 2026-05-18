@@ -71,12 +71,7 @@ class MACGPi:
             # -------------------------------------
             # vLLM host connection health check
             # -------------------------------------
-            logger.debug(
-                f"Attempting to connect to model server at {self.model_host}:{self.model_port}...")
-            if not vllm_health(self.model_host, self.model_port):
-                logger.error(f"Cannot reach vLLM server. Start a server on {self.model_host}:{self.model_port} or "
-                             + "update the host "
-                             + "and port parameters accordingly.")
+            if not self.test_vllm_connection():
                 return False
 
             # -------------------------------------
@@ -101,19 +96,8 @@ class MACGPi:
                 return False
 
             # Test whether all phases contain valid phase directories
-            for phase in phases_config.keys():
-                logger.debug(f"Checking phase validity of phase \"{phase}\"")
-
-                phase_config: dict = phases_config[phase]
-                phase_path: str = os.path.join(
-                    self.templateManager.prompt_dir, phase_config["path"])
-                schema_required: bool = phase_config["schema"]
-
-                if (not is_phase_dir(phase_path, schema_required=schema_required)):
-                    logger.error(f"Phase {phase} is not a valid phase directory in {self.templateManager.prompt_dir}. "
-                                 + "Please ensure that it contains both a template.md file"
-                                 + f"{" and a schema.json file" if schema_required else ''}.")
-                    return False
+            if not self.validate_phases(phases_config):
+                return False
 
             logger.debug("Pre-validation checks OK")
 
@@ -125,13 +109,9 @@ class MACGPi:
             # Write PRD to output dir
             logger.debug(
                 f"Writing project description to output directory at {self.output_dir}...")
-            project_description_path: str = os.path.join(
-                self.output_dir, "docs", "project_description.md")
 
-            if not os.path.exists(project_description_path):
-                os.makedirs(os.path.dirname(
-                    project_description_path), exist_ok=True)
-
+            project_description_path: str = os.path.join(self.output_dir, "docs", "project_description.md")
+            os.makedirs(os.path.dirname(project_description_path), exist_ok=True)
             with open(project_description_path, "w") as f:
                 f.write(self.input)
 
@@ -156,8 +136,7 @@ class MACGPi:
 
                 self.phase_visits[phase] += 1
 
-                logger.debug(
-                    f"Phase config for phase {phase}:\n{json.dumps(phase_config, indent=4)}")
+                logger.debug(f"Phase config for phase {phase}:\n{json.dumps(phase_config, indent=4)}")
 
                 output_path: str | None = self.output_dir
                 if "output_path" in phase_config.keys():
@@ -169,8 +148,7 @@ class MACGPi:
                 prompts: list[str] = get_phase_prompts(os.path.join(
                     self.templateManager.prompt_dir, phase_config["path"]))
                 for prompt_file in prompts:
-                    logger.info(
-                        f"Running prompt {prompt_file} for phase {phase}...")
+                    logger.info(f"Running prompt {prompt_file} for phase {phase}...")
                     template_output: str = self.templateManager.render(phase_config["path"], template_file=prompt_file,
                                                                        output_path=output_path, **inputs)
                     self.agentManager.run(template_output)
@@ -179,17 +157,9 @@ class MACGPi:
                     schema_path: str = os.path.join(self.templateManager.prompt_dir,
                                                     phase_config["path"], "schema.json")
 
-                    with open(schema_path, "r") as schema_file, open(output_path, "r") as output_file:
-                        schema_dict: dict = json.load(schema_file)
-                        output_dict: dict = json.load(output_file)
-                        valid: bool = validate_output_file(output_dict, schema_dict)
-
-                        # Output not correct according to schema, re-run phase
-                        if not valid:
-                            logger.warning(
-                                f"Output for phase {phase} did not validate against the schema. Re-running phase...")
-                            self.phase_visits[phase] -= 1
-                            continue
+                    if not self.validate_output(output_path, schema_path, phase):
+                        self.phase_visits[phase] -= 1
+                        continue
 
                 logger.info(f"Finished phase {phase}.")
                 phase = get_next_phase(phase_config, output_dir=self.output_dir)
@@ -207,3 +177,58 @@ class MACGPi:
         Returns the number of visits for each phase.
         '''
         return self.phase_visits
+
+    def test_vllm_connection(self) -> bool:
+        '''
+        Tests the connection to the vLLM server specified by the model_host and model_port parameters. Returns True if
+        the connection test succeeds, and False if it fails.
+        '''
+        logger.debug(
+            f"Attempting to connect to model server at {self.model_host}:{self.model_port}...")
+
+        if not vllm_health(self.model_host, self.model_port):
+            logger.error(f"Cannot reach vLLM server. Start a server on {self.model_host}:{self.model_port} or "
+                         + "update the host "
+                         + "and port parameters accordingly.")
+            return False
+
+        return True
+
+    def validate_phases(self, phases_config: dict) -> bool:
+        '''
+        Validates that all phases specified in the phase configuration contain valid phase directories. A valid phase
+        directory is a directory that contains at least a template.md file, and if the phase requires a schema, also
+        contains a schema.json file. Returns True if all phases are valid, and False otherwise.
+        '''
+        for phase in phases_config.keys():
+            logger.debug(f"Checking phase validity of phase \"{phase}\"")
+
+            phase_config: dict = phases_config[phase]
+            phase_path: str = os.path.join(
+                self.templateManager.prompt_dir, phase_config["path"])
+            schema_required: bool = phase_config["schema"]
+
+            if (not is_phase_dir(phase_path, schema_required=schema_required)):
+                logger.error(f"Phase {phase} is not a valid phase directory in {self.templateManager.prompt_dir}. "
+                             + "Please ensure that it contains both a template.md file"
+                             + f"{" and a schema.json file" if schema_required else ''}.")
+                return False
+
+        return True
+
+    def validate_output(self, output_path: str, schema_path: str, phase: str) -> bool:
+        '''
+        Validates the output of a phase against the specified schema. Returns True if the output is valid, and False
+        if it is not.
+        '''
+        with open(schema_path, "r") as schema_file, open(output_path, "r") as output_file:
+            schema_dict: dict = json.load(schema_file)
+            output_dict: dict = json.load(output_file)
+            valid: bool = validate_output_file(output_dict, schema_dict)
+
+            # Output not correct according to schema, re-run phase
+            if not valid:
+                logger.warning(f"Output for phase {phase} did not validate against the schema. Re-running phase...")
+                return False
+
+        return True

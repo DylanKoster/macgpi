@@ -4,39 +4,48 @@
 You are an expert software architect tasked with creating a detailed implementation plan.
 
 ## Input
-- **PRD**: {{ system_prd }}
+
+<prd>
+{{ system_prd }}
+</prd>
 
 ## Your Task
 
-Analyze the provided PRD and generate a structured implementation plan that includes:
+Analyze the provided PRD and produce a structured implementation plan with the following sections. Each section maps directly to the required output schema.
 
-### 1. **Project Overview**
-- Summary of key features and objectives
-- Success criteria
+### 1. **Objectives**
+- One entry per primary goal or requirement derived from the PRD
+- Assign each an `id`, a clear `description`, and a `priority` (high / medium / low)
+- Optionally include measurable `metrics` for each objective
 
-### 2. **Architecture Design**
-- High-level system architecture
-- Technology stack recommendations
-- Component breakdown
+### 2. **Architecture**
+- Choose an architectural `pattern` (e.g. layered, MVC, microservices, event-driven)
+- Provide a `rationale` explaining why this pattern suits the PRD
+- List any `constraints` that restrict the design space
 
-### 3. **Implementation Phases**
-- Phase name and description
-- Duration estimate
-- Key deliverables
-- Dependencies
+### 3. **Components**
+- One entry per planned module or service
+- State the `name` and its `responsibility`
+- Optionally describe `interfaces` it exposes and a note on `testability`
 
-### 4. **Technical Specifications**
-- Data models and schemas
-- API endpoints (if applicable)
-- Database requirements
+### 4. **Dependencies**
+- One entry per external library or internal component dependency
+- State `name`, `type` (external / internal), and a `justification`
+- Include a `version` where known
 
-### 5. **Risk Assessment**
-- Potential risks
-- Mitigation strategies
+### 5. **Implementation Tasks**
+- One entry per concrete unit of work, ordered by execution dependency
+- Assign each an `id` and a short `title`
+- Set `component` to the name of the component (from section 3) the task belongs to
+- Write a `description` explaining exactly what must be built or configured
+- List `depends_on` as the `id`s of any tasks that must complete first (omit if none)
+- List `acceptance_criteria` as verifiable conditions that confirm the task is done
 
-### 6. **Resource Requirements**
-- Team composition
-- Tools and infrastructure
+### 6. **Quality Standards**
+- List the `coding_standards` to be enforced (e.g. linting rules, style guides)
+- Set the `documentation_level` (minimal / standard / comprehensive)
+- Set a `test_coverage_target` as a percentage (0–100)
+
 
 ## Output Format
 Provide the plan in structured json with clear sections and bullet points. ONLY generate the plan, do NOT generate any code yet.

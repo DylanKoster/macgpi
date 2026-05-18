@@ -32,8 +32,12 @@ def parse_phase_config(config_file: str | None) -> dict:
         config_file = os.path.join(os.path.dirname(
             __file__), "..", "configs", "macgpi_phases.json")
 
-    with open(config_file, "r") as f:
-        config: dict = json.load(f)
+    try:
+        with open(config_file, "r") as f:
+            config: dict = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        logger.error(f"Error occurred while parsing phase configuration file at {config_file}: {e}")
+        return None
 
     return config
 
@@ -104,6 +108,7 @@ def get_next_phase(phase_config: dict, output_dir: str) -> str | None:
 
     logger.debug(
         f"Next phase is dynamic. Attempting to read next phase from output directory at {output_dir}...")
+
     output_path: str | None = phase_config.get("output_path", None)
     if output_path is None:
         return None

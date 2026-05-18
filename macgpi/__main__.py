@@ -1,7 +1,8 @@
 import argparse
 import logging
 
-from macgpi.engine.main import macgpi
+from macgpi.engine.main import MACGPi
+
 
 def cli():
     parser = argparse.ArgumentParser(
@@ -24,17 +25,20 @@ def cli():
     parser.add_argument(
         "--prompt-dir",
         default=None,
-        help="The directory under which the valid phase prompts and schemas are located. If not provided, it defaults to a 'prompts' directory located in the parent directory of this module.",
+        help="The directory under which the valid phase prompts and schemas are located. If not provided, it defaults"
+             + " to a 'prompts' directory located in the parent directory of this module.",
     )
     parser.add_argument(
         "--model-config",
         default=None,
-        help="Configuration file for the model. If not provided, the default mini-swe-agent configuration will be used.",
+        help="Configuration file for the model. If not provided, the default mini-swe-agent configuration will be "
+             + "used.",
     )
     parser.add_argument(
         "--agent-config",
         default=None,
-        help="Configuration file for the agent. If not provided, the default mini-swe-agent configuration will be used.",
+        help="Configuration file for the agent. If not provided, the default mini-swe-agent configuration will be "
+        + "used.",
     )
     parser.add_argument(
         "--phases-config",
@@ -53,9 +57,11 @@ def cli():
 
     # Remove log_level from params since it's not used in macgpi function
     params = vars(args)
-    params.pop("log_level")  
-    
-    macgpi(**params)
+    params.pop("log_level")
+
+    macgpi: MACGPi = MACGPi(**params)
+    macgpi.run()
+
 
 if __name__ == "__main__":
     cli()

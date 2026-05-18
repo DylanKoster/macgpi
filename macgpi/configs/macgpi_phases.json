@@ -26,8 +26,9 @@
             "schema": true,
             "path": "03_evaluate/",
             "output_path": "docs/evaluation_report.json",
-            "next": "revise",
-            "max_visits": 3
+            "next": "dynamic",
+            "max_visits": 3,
+            "max_visits_exceeded_next": "finish"
         },
         "revise": {
             "inputs": {

@@ -1,0 +1,15 @@
+{
+    "summary": "All checks passed successfully.",
+    "status": "pass",
+    "findings": [
+        {
+            "id": "check_1",
+            "description": "Check 1 passed without any issues."
+        },
+        {
+            "id": "check_2",
+            "description": "Check 2 passed without any issues."
+        }
+    ],
+    "value": 110
+}

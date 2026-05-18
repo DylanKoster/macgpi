@@ -139,18 +139,23 @@ class MACGPi:
 
             phase: str = list(phases_config.keys())[0]
             while not is_finished_phase(phase):
-                logger.info(f"Starting phase {phase}...")
+                phase_config: dict = phases_config[phase]
 
                 # Test whether max_visits has been exceeded for this phase, and if so, move to the
                 # max_visits_exceeded_next
                 max_visits: int = phase_config.get("max_visits", 1)
                 if (self.phase_visits[phase] >= max_visits):
-                    phase = phases_config.get("max_visits_exceeded_next", None)
+                    next_phase = phase_config.get("max_visits_exceeded_next", "finish")
+                    logger.info(
+                        f"Max visits exceeded for phase {phase}, moving to max_visits_exceeded_next phase "
+                        + f"{next_phase}...")
+                    phase = next_phase
                     continue
+
+                logger.info(f"Starting phase {phase}...")
 
                 self.phase_visits[phase] += 1
 
-                phase_config: dict = phases_config[phase]
                 logger.debug(
                     f"Phase config for phase {phase}:\n{json.dumps(phase_config, indent=4)}")
 
@@ -171,8 +176,7 @@ class MACGPi:
                     self.agentManager.run(template_output)
 
                 logger.info(f"Finished phase {phase}.")
-                phase = get_next_phase(
-                    phase_config, output_dir=self.output_dir)
+                phase = get_next_phase(phase_config, output_dir=self.output_dir)
 
             logger.info(
                 f"MACGPi execution finished, result copied to {self.output_dir}")

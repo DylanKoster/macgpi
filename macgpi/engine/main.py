@@ -7,7 +7,7 @@ from macgpi.engine.agent_manager import AgentManager
 from macgpi.engine.vllm import vllm_health
 from macgpi.engine.template_manager import TemplateManager
 from macgpi.engine.phase_utils import (get_next_phase, get_phase_prompts, is_finished_phase, is_phase_dir,
-                                       parse_phase_config, read_phase_inputs)
+                                       parse_phase_config, read_phase_inputs, validate_output_file)
 
 logger = logging.getLogger(__name__)
 
@@ -174,6 +174,22 @@ class MACGPi:
                     template_output: str = self.templateManager.render(phase_config["path"], template_file=prompt_file,
                                                                        output_path=output_path, **inputs)
                     self.agentManager.run(template_output)
+
+                if phase_config.get("schema", False) and output_path is not None:
+                    schema_path: str = os.path.join(self.templateManager.prompt_dir,
+                                                    phase_config["path"], "schema.json")
+
+                    with open(schema_path, "r") as schema_file, open(output_path, "r") as output_file:
+                        schema_dict: dict = json.load(schema_file)
+                        output_dict: dict = json.load(output_file)
+                        valid: bool = validate_output_file(output_dict, schema_dict)
+
+                        # Output not correct according to schema, re-run phase
+                        if not valid:
+                            logger.warning(
+                                f"Output for phase {phase} did not validate against the schema. Re-running phase...")
+                            self.phase_visits[phase] -= 1
+                            continue
 
                 logger.info(f"Finished phase {phase}.")
                 phase = get_next_phase(phase_config, output_dir=self.output_dir)

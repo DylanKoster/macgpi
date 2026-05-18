@@ -76,6 +76,12 @@ def temp_prompts_dir(temp_dir):
     with open(os.path.join(revise_phase, "template.md"), "w") as f:
         f.write("# Revise phase\n{{ system_prd }}\n{{ implementation_plan }}\n{{ evaluation_report }}")
 
+    # Create finally phase (executes after max visits exceeded in evaluate phase)
+    finally_phase = os.path.join(prompts_dir, "05_finally")
+    os.makedirs(finally_phase)
+    with open(os.path.join(finally_phase, "template.md"), "w") as f:
+        f.write("# Finally phase\n{{ evaluation_report }}")
+
     # Create invalid phase 1
     eval_phase = os.path.join(prompts_dir, "04_invalid")
     os.makedirs(eval_phase)
@@ -121,7 +127,7 @@ def sample_phase_config(temp_dir):
                 "output_path": "docs/evaluation_report.json",
                 "next": "revise",
                 "max_visits": 3,
-                "max_visits_exceeded_next": "finish"
+                "max_visits_exceeded_next": "finally"
             },
             "revise": {
                 "inputs": {
@@ -133,6 +139,14 @@ def sample_phase_config(temp_dir):
                 "path": "04_revise/",
                 "next": "evaluate",
                 "max_visits": 3
+            },
+            "finally": {
+                "inputs": {
+                    "evaluation_report": "docs/evaluation_report.json"
+                },
+                "schema": False,
+                "path": "05_finally/",
+                "next": "finish"
             }
         }
     }

@@ -227,6 +227,7 @@ class TestMacgpiMain:
         assert phase_visits["implement"] == 1
         assert phase_visits["evaluate"] == 3
         assert phase_visits["revise"] == 3
+        assert phase_visits["finally"] == 1
 
 
 class TestMacgpiErrorHandling:

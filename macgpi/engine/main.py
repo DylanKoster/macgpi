@@ -77,29 +77,13 @@ class MACGPi:
             # -------------------------------------
             # Phase configuration parsing
             # -------------------------------------
-            logger.debug("Parsing phase configuration...")
-
-            macgpi_config: dict = parse_phase_config(self.phases_config)
-            phases_config: dict = macgpi_config["phases"]
-            self.phase_visits: dict = {
-                phase_name: 0 for phase_name in phases_config.keys()}
-
-            logger.debug("Phase configuration parsed successfully.")
+            phases_config = self.load_phases_config()
 
             # -------------------------------------
             # Pre-execution validation check
             # -------------------------------------
-            logger.debug("Executing pre-execution validation checks")
-
-            if (self.templateManager is None or self.agentManager is None):
-                logger.error("MACGPi was not initialized successfully, cannot run pipeline.")
+            if not self.pre_execution_validation(phases_config):
                 return False
-
-            # Test whether all phases contain valid phase directories
-            if not self.validate_phases(phases_config):
-                return False
-
-            logger.debug("Pre-validation checks OK")
 
             # -------------------------------------
             # MACGPi phase execution
@@ -231,4 +215,38 @@ class MACGPi:
                 logger.warning(f"Output for phase {phase} did not validate against the schema. Re-running phase...")
                 return False
 
+        return True
+
+    def load_phases_config(self) -> dict:
+        '''
+        Loads the phase configuration from the specified configuration file, or from the default configuration if no
+        file is specified. Returns the loaded phase configuration as a dictionary.
+        '''
+        logger.debug("Parsing phase configuration...")
+
+        macgpi_config: dict = parse_phase_config(self.phases_config)
+        phases_config: dict = macgpi_config["phases"]
+        self.phase_visits: dict = {phase_name: 0 for phase_name in phases_config.keys()}
+
+        logger.debug("Phase configuration parsed successfully.")
+
+        return phases_config
+
+    def pre_execution_validation(self, phases_config: dict) -> bool:
+        '''
+        Executes validation checks before running the pipeline, including validating the phase configuration and
+        testing if the template and agent managers were initialized successfully. Returns True if all validation checks
+        pass, and False if any check fails.
+        '''
+        logger.debug("Executing pre-execution validation checks")
+
+        if (self.templateManager is None or self.agentManager is None):
+            logger.error("MACGPi was not initialized successfully, cannot run pipeline.")
+            return False
+
+        # Test whether all phases contain valid phase directories
+        if not self.validate_phases(phases_config):
+            return False
+
+        logger.debug("Pre-execution validation checks OK")
         return True

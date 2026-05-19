@@ -454,7 +454,7 @@ If not ready:
 When you run this prompt:
 
 1. Write the SCoT files to `{{ output_path }}`.
-2. Create `{{ output_path }}/SCOT_INDEX.md`.
+2. Create `{{ output_path }}/SCOT_INDEX.scot.md`.
 3. Create one `*.scot.md` file for every eventual implementation file.
 4. Preserve the final implementation directory structure.
 5. Do not write source code, test code, or final documentation yet.

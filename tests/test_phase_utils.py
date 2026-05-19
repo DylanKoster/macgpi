@@ -7,7 +7,8 @@ from macgpi.engine.phase_utils import (
     read_phase_inputs,
     is_finished_phase,
     get_next_phase,
-    get_phase_prompts
+    get_phase_prompts,
+    validate_output_file
 )
 
 
@@ -16,7 +17,7 @@ class TestParsePhaseConfig:
 
     def test_parse_valid_config(self, sample_phase_config):
         """Test parsing a valid phase configuration file."""
-        config = parse_phase_config(sample_phase_config)
+        config: dict = parse_phase_config(sample_phase_config)
 
         assert "phases" in config
         assert "plan" in config["phases"]
@@ -26,9 +27,9 @@ class TestParsePhaseConfig:
 
     def test_parse_config_structure(self, sample_phase_config):
         """Test that parsed config has expected structure."""
-        config = parse_phase_config(sample_phase_config)
+        config: dict = parse_phase_config(sample_phase_config)
 
-        plan_phase = config["phases"]["plan"]
+        plan_phase: dict = config["phases"]["plan"]
         assert "inputs" in plan_phase
         assert "schema" in plan_phase
         assert "path" in plan_phase
@@ -39,7 +40,7 @@ class TestParsePhaseConfig:
         """Test parsing with None uses default config."""
         # This tests the default behavior when config_file is None
         # The function should look for macgpi/configs/macgpi_phases.json
-        config = parse_phase_config(None)
+        config: dict = parse_phase_config(None)
         assert isinstance(config, dict)
         assert "phases" in config
         assert "plan" in config["phases"]
@@ -61,7 +62,7 @@ class TestIsPhaseDdir:
 
     def test_invalid_dir_no_template(self, temp_dir):
         """Test that a dir without template.md is invalid."""
-        phase_dir = os.path.join(temp_dir, "invalid_phase")
+        phase_dir: str = os.path.join(temp_dir, "invalid_phase")
         os.makedirs(phase_dir)
 
         # Create only schema, no template
@@ -72,7 +73,7 @@ class TestIsPhaseDdir:
 
     def test_invalid_dir_no_schema_when_required(self, temp_dir):
         """Test that a dir without schema fails when schema_required=True."""
-        phase_dir = os.path.join(temp_dir, "no_schema_phase")
+        phase_dir: str = os.path.join(temp_dir, "no_schema_phase")
         os.makedirs(phase_dir)
 
         # Create only template, no schema
@@ -83,7 +84,7 @@ class TestIsPhaseDdir:
 
     def test_nonexistent_dir(self, temp_dir):
         """Test that nonexistent directory returns False."""
-        nonexistent = os.path.join(temp_dir, "nonexistent")
+        nonexistent: str = os.path.join(temp_dir, "nonexistent")
         assert not is_phase_dir(nonexistent)
 
 
@@ -92,12 +93,12 @@ class TestReadPhaseInputs:
 
     def test_read_inputs(self, sample_output_dir):
         """Test reading multiple phase inputs."""
-        inputs = {
+        inputs: dict = {
             "system_prd": "docs/project_description.md",
             "implementation_plan": "docs/plan.json"
         }
 
-        result = read_phase_inputs(inputs, sample_output_dir)
+        result: dict = read_phase_inputs(inputs, sample_output_dir)
 
         assert "system_prd" in result
         assert "implementation_plan" in result
@@ -105,15 +106,15 @@ class TestReadPhaseInputs:
 
     def test_read_inputs_includes_output_dir(self, sample_output_dir):
         """Test that output_dir is included in results."""
-        inputs = {}
-        result = read_phase_inputs(inputs, sample_output_dir)
+        inputs: dict = {}
+        result: dict = read_phase_inputs(inputs, sample_output_dir)
 
         assert "output_dir" in result
         assert result["output_dir"] == sample_output_dir
 
     def test_read_nonexistent_input_raises_error(self, sample_output_dir):
         """Test that reading nonexistent input raises FileNotFoundError."""
-        inputs = {
+        inputs: dict = {
             "missing": "docs/nonexistent.md"
         }
 
@@ -148,42 +149,42 @@ class TestGetNextPhase:
 
     def test_static_next_phase(self, sample_output_dir):
         """Test getting a statically defined next phase."""
-        phase_config = {
+        phase_config: dict = {
             "next": "implement"
         }
 
-        result = get_next_phase(phase_config, sample_output_dir)
+        result: str = get_next_phase(phase_config, sample_output_dir)
         assert result == "implement"
 
     def test_none_next_phase(self, sample_output_dir):
         """Test when next phase is not defined."""
-        phase_config = {}
+        phase_config: dict = {}
 
-        result = get_next_phase(phase_config, sample_output_dir)
+        result: str = get_next_phase(phase_config, sample_output_dir)
         assert result is None
 
     def test_dynamic_next_phase(self, sample_output_dir):
         """Test getting dynamically determined next phase."""
         # Update the plan.json file to have "next" field
-        plan_path = os.path.join(sample_output_dir, "docs", "plan.json")
+        plan_path: str = os.path.join(sample_output_dir, "docs", "plan.json")
         with open(plan_path, "w") as f:
             json.dump({"plan": "test plan", "next": "plan"}, f)
 
-        phase_config = {
+        phase_config: dict = {
             "next": "dynamic",
             "output_path": "docs/plan.json"
         }
 
-        result = get_next_phase(phase_config, sample_output_dir)
+        result: str = get_next_phase(phase_config, sample_output_dir)
         assert result == "plan"
 
     def test_dynamic_without_output_path(self, sample_output_dir):
         """Test dynamic next phase without output_path returns None."""
-        phase_config = {
+        phase_config: dict = {
             "next": "dynamic"
         }
 
-        result = get_next_phase(phase_config, sample_output_dir)
+        result: str = get_next_phase(phase_config, sample_output_dir)
         assert result is None
 
 
@@ -192,14 +193,14 @@ class TestGetPhasePrompts:
 
     def test_single_template_file(self, temp_phase_dir):
         """Test retrieving single template file."""
-        prompts = get_phase_prompts(temp_phase_dir)
+        prompts: list[str] = get_phase_prompts(temp_phase_dir)
 
         assert len(prompts) == 1
         assert prompts[0] == "template.md"
 
     def test_multiple_template_files(self, temp_dir):
         """Test retrieving multiple template files in sorted order."""
-        phase_dir = os.path.join(temp_dir, "multi_template")
+        phase_dir: str = os.path.join(temp_dir, "multi_template")
         os.makedirs(phase_dir)
 
         # Create multiple templates
@@ -207,7 +208,7 @@ class TestGetPhasePrompts:
             with open(os.path.join(phase_dir, f"template_{i:02d}.md"), "w") as f:
                 f.write(f"# Template {i}")
 
-        prompts = get_phase_prompts(phase_dir)
+        prompts: list[str] = get_phase_prompts(phase_dir)
 
         assert len(prompts) == 3
         # Should be sorted
@@ -217,7 +218,7 @@ class TestGetPhasePrompts:
 
     def test_ignores_non_template_files(self, temp_dir):
         """Test that non-template files are ignored."""
-        phase_dir = os.path.join(temp_dir, "mixed_files")
+        phase_dir: str = os.path.join(temp_dir, "mixed_files")
         os.makedirs(phase_dir)
 
         # Create templates and other files
@@ -228,15 +229,42 @@ class TestGetPhasePrompts:
         with open(os.path.join(phase_dir, "readme.txt"), "w") as f:
             f.write("readme")
 
-        prompts = get_phase_prompts(phase_dir)
+        prompts: list[str] = get_phase_prompts(phase_dir)
 
         assert len(prompts) == 1
         assert prompts[0] == "template.md"
 
     def test_empty_phase_dir(self, temp_dir):
         """Test that empty directory returns empty list."""
-        phase_dir = os.path.join(temp_dir, "empty")
+        phase_dir: str = os.path.join(temp_dir, "empty")
         os.makedirs(phase_dir)
 
-        prompts = get_phase_prompts(phase_dir)
+        prompts: list[str] = get_phase_prompts(phase_dir)
         assert prompts == []
+
+
+class TestPhaseOutputValidation:
+    """Tests for validate_output_file function."""
+
+    def test_valid_output(self):
+        """Test that valid output passes validation."""
+        with open(os.path.join(os.path.dirname(__file__), "fixtures", "schema_1.json"), "r") as schema:
+            schema_dict: dict = json.load(schema)
+
+            for i in range(1, 3):
+                path: str = os.path.join(os.path.dirname(__file__), "fixtures", f"schema_1_pass_{i}.json")
+
+                with open(path, "r") as output:
+                    output_dict: dict = json.load(output)
+                    assert validate_output_file(output_dict, schema_dict)
+
+    def test_invalid_output(self):
+        """Test that invalid output fails validation."""
+        with open(os.path.join(os.path.dirname(__file__), "fixtures", "schema_1.json"), "r") as schema:
+            schema_dict: dict = json.load(schema)
+
+            for i in range(1, 5):
+                path: str = os.path.join(os.path.dirname(__file__), "fixtures", f"schema_1_fail_{i}.json")
+                with open(path, "r") as output:
+                    output_dict: dict = json.load(output)
+                    assert not validate_output_file(output_dict, schema_dict)

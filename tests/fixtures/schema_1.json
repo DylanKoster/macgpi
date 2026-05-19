@@ -1,0 +1,55 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Test Phase Schema",
+    "description": "Minimal schema used as a fixture to test MACGPi schema validation",
+    "type": "object",
+    "required": [
+        "summary",
+        "status",
+        "findings"
+    ],
+    "properties": {
+        "summary": {
+            "type": "string",
+            "description": "Short description of the result"
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "pass",
+                "fail"
+            ],
+            "description": "Overall result status"
+        },
+        "findings": {
+            "type": "array",
+            "description": "List of findings produced by the phase",
+            "items": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "description"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "comment": {
+            "type": "string",
+            "description": "Optional comment about the result"
+        },
+        "value": {
+            "type": "number",
+            "description": "Optional numeric value associated with the result",
+            "minimum": 0,
+            "maximum": 100
+        }
+    },
+    "additionalProperties": false
+}

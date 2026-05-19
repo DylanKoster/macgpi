@@ -91,15 +91,7 @@ class MACGPi:
             logger.info("Starting MACGPi execution")
 
             # Write PRD to output dir
-            logger.debug(
-                f"Writing project description to output directory at {self.output_dir}...")
-
-            project_description_path: str = os.path.join(self.output_dir, "docs", "project_description.md")
-            os.makedirs(os.path.dirname(project_description_path), exist_ok=True)
-            with open(project_description_path, "w") as f:
-                f.write(self.input)
-
-            logger.debug("Done!")
+            self.write_input_to_output_dir()
 
             phase: str = list(phases_config.keys())[0]
             while not is_finished_phase(phase):
@@ -120,8 +112,6 @@ class MACGPi:
 
                 self.phase_visits[phase] += 1
 
-                logger.debug(f"Phase config for phase {phase}:\n{json.dumps(phase_config, indent=4)}")
-
                 output_path: str | None = self.output_dir
                 if "output_path" in phase_config.keys():
                     output_path = self.output_dir + "/" + phase_config["output_path"]
@@ -137,6 +127,8 @@ class MACGPi:
                                                                        output_path=output_path, **inputs)
                     self.agentManager.run(template_output)
 
+                # If the phase requires schema validation of the output, validate the output and re-run the phase if it
+                # fails
                 if phase_config.get("schema", False) and output_path is not None:
                     schema_path: str = os.path.join(self.templateManager.prompt_dir,
                                                     phase_config["path"], "schema.json")
@@ -250,3 +242,17 @@ class MACGPi:
 
         logger.debug("Pre-execution validation checks OK")
         return True
+
+    def write_input_to_output_dir(self) -> None:
+        '''
+        Writes the project description to the output directory. This is useful for providing the project description as
+        a reference for the prompts and agents during execution.
+        '''
+        logger.debug(f"Writing project description to output directory at {self.output_dir}...")
+
+        project_description_path: str = os.path.join(self.output_dir, "docs", "project_description.md")
+        os.makedirs(os.path.dirname(project_description_path), exist_ok=True)
+        with open(project_description_path, "w") as f:
+            f.write(self.input)
+
+        logger.debug("Done!")

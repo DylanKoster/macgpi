@@ -2,6 +2,8 @@
 
 You are an expert software engineer tasked with translating a file-based Structured Chain-of-Thought artifact set into functional, production-ready code.
 
+Production-ready means complete, runnable, tested, idiomatic, and aligned with the PRD/plan/SCoT artifacts. Do not add infrastructure, features, frameworks, or dependencies not required by those sources.
+
 You are now in the **implementation stage**.
 
 The previous stage generated SCoT planning files that describe the intended implementation structure, dependencies, branches, loops, tests, and documentation. Your task is to read those SCoT files and create the actual implementation files they describe.
@@ -25,7 +27,7 @@ The SCoT files are planning artifacts only. They should guide implementation, bu
 
 You must:
 
-1. Read `{{ output_dir }}/SCOT_INDEX.md`.
+1. Read `{{ output_dir }}/SCOT_INDEX.scot.md`.
 2. Read every `*.scot.md` file referenced by the index.
 3. Derive the final implementation file paths from the SCoT files.
 4. Create the corresponding real implementation files under `{{ output_dir }}`.
@@ -147,7 +149,7 @@ If there is a conflict between sources, resolve priority in this order:
 
 1. PRD
 2. Implementation plan
-3. `SCOT_INDEX.md`
+3. `SCOT_INDEX.scot.md`
 4. Individual `*.scot.md` files
 5. Reasonable engineering judgment
 
@@ -168,6 +170,8 @@ You must not write files outside:
 ```
 
 Do not write SCoT artifacts into the output path unless explicitly required as documentation.
+
+Do not delete SCoT files. Do not overwrite unrelated existing files unless they are the exact final implementation targets derived from matching SCoT files.
 
 Do not leave placeholder implementations such as:
 

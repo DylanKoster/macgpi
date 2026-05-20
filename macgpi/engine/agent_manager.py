@@ -12,7 +12,8 @@ class AgentManager:
     of a singleton MiniSWEAgent instance, and executing the phase prompts.
     '''
 
-    def __init__(self, model_name: str, model_host: str = "localhost", model_port: int = 8000, model_config_file: dict | None = None, agent_config_file: dict | None = None):
+    def __init__(self, model_name: str, model_host: str = "localhost", model_port: int = 8000,
+                 model_config_file: str | None = None, agent_config_file: str | None = None):
         self.load_model_config(
             model_config_file, model_name, model_host, model_port)
         self.load_agent_config(agent_config_file)
@@ -51,7 +52,7 @@ class AgentManager:
             "api_key": "EMPTY",
         }
 
-        if model_config_file == None:
+        if model_config_file is None:
             model_config_file = os.path.join(os.path.dirname(
                 __file__), "..", "configs", "model.config.yaml")
 
@@ -68,7 +69,7 @@ class AgentManager:
         Parameters:
             agent_config_file (str): The path to the agent configuration file.
         '''
-        if agent_config_file == None:
+        if agent_config_file is None:
             agent_config_file = os.path.join(os.path.dirname(
                 __file__), "..", "configs", "agent.config.yaml")
 

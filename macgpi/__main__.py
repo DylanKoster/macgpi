@@ -8,9 +8,11 @@ def cli():
     parser = argparse.ArgumentParser(
         description="MACGPi: The Maintainability-Aware Code Generation Pipeline."
     )
-    parser.add_argument("input", help="Project/issue description.")
-    parser.add_argument("model_name", help="Model name understood by mini-swe-agent.")
-    parser.add_argument("output_dir", help="Path to the target project directory.")
+    parser.add_argument("input_description", help="Project/issue description.")
+    parser.add_argument(
+        "model_name", help="Model name understood by mini-swe-agent.")
+    parser.add_argument(
+        "output_dir", help="Path to the target project directory.")
     parser.add_argument(
         "--model-host",
         default="localhost",
@@ -29,19 +31,19 @@ def cli():
              + " to a 'prompts' directory located in the parent directory of this module.",
     )
     parser.add_argument(
-        "--model-config",
+        "--model-config-file",
         default=None,
         help="Configuration file for the model. If not provided, the default mini-swe-agent configuration will be "
              + "used.",
     )
     parser.add_argument(
-        "--agent-config",
+        "--agent-config-file",
         default=None,
         help="Configuration file for the agent. If not provided, the default mini-swe-agent configuration will be "
         + "used.",
     )
     parser.add_argument(
-        "--phases-config",
+        "--phases-config-file",
         default=None,
         help="Configuration file for the phases. If not provided, the default MACGPi configuration will be used.",
     )
@@ -53,7 +55,8 @@ def cli():
 
     args = parser.parse_args()
 
-    logging.basicConfig(level=args.log_level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    logging.basicConfig(
+        level=args.log_level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # Remove log_level from params since it's not used in macgpi function
     params = vars(args)

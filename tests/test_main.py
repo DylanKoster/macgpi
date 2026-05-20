@@ -12,7 +12,7 @@ class TestMacgpiMain:
         mock_health.return_value = False
 
         macgpi: MACGPi = MACGPi(
-            input="test input",
+            input_description="test input",
             model_name="test-model",
             output_dir=temp_dir
         )
@@ -45,13 +45,13 @@ class TestMacgpiMain:
         output_dir = os.path.join(temp_dir, "output")
 
         macgpi: MACGPi = MACGPi(
-            input="test input",
+            input_description="test input",
             model_name="test-model",
             output_dir=output_dir,
             prompt_dir=None,
-            model_config=None,
-            agent_config=None,
-            phases_config=None
+            model_config_file=None,
+            agent_config_file=None,
+            phases_config_file=None
         )
         macgpi.run()
 
@@ -83,13 +83,13 @@ class TestMacgpiMain:
         test_input = "Build a web application"
 
         macgpi: MACGPi = MACGPi(
-            input=test_input,
+            input_description=test_input,
             model_name="test-model",
             output_dir=output_dir,
             prompt_dir=None,
-            model_config=None,
-            agent_config=None,
-            phases_config=None
+            model_config_file=None,
+            agent_config_file=None,
+            phases_config_file=None
         )
         macgpi.run()
 
@@ -125,11 +125,11 @@ class TestMacgpiMain:
 
         # Should complete validation successfully
         macgpi: MACGPi = MACGPi(
-            input="test",
+            input_description="test",
             model_name="test-model",
             output_dir=sample_output_dir,
             prompt_dir=temp_prompts_dir,
-            phases_config=sample_phase_config
+            phases_config_file=sample_phase_config
         )
         result = macgpi.run()
 
@@ -176,11 +176,11 @@ class TestMacgpiMain:
 
         # Should return False due to invalid phase
         macgpi: MACGPi = MACGPi(
-            input="test",
+            input_description="test",
             model_name="test-model",
             output_dir=sample_output_dir,
             prompt_dir=temp_prompts_dir,
-            phases_config=None
+            phases_config_file=None
         )
         result = macgpi.run()
 
@@ -210,11 +210,11 @@ class TestMacgpiMain:
         mock_agent_mgr.return_value = mock_agent
 
         macgpi: MACGPi = MACGPi(
-            input="test",
+            input_description="test",
             model_name="test-model",
             output_dir=sample_output_dir,
             prompt_dir=temp_prompts_dir,
-            phases_config=sample_phase_config
+            phases_config_file=sample_phase_config
         )
         result = macgpi.run()
 
@@ -240,10 +240,10 @@ class TestMacgpiErrorHandling:
 
         # Should not raise exception, but return False
         macgpi: MACGPi = MACGPi(
-            input="test",
+            input_description="test",
             model_name="test-model",
             output_dir=temp_dir,
-            phases_config="/nonexistent/path/config.json"
+            phases_config_file="/nonexistent/path/config.json"
         )
         result = macgpi.run()
 

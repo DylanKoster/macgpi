@@ -4,27 +4,21 @@
   "description": "Schema for structured evaluation output of an implementation against a PRD and plan",
   "type": "object",
   "required": [
-    "evaluated_at",
-    "evaluated_by",
     "overall_rating",
     "summary",
     "findings",
     "recommendations",
-    "next"
+    "next",
+    "compliance"
   ],
   "properties": {
-    "evaluated_at": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Timestamp when evaluation was performed"
-    },
-    "evaluated_by": {
-      "type": "string",
-      "description": "Name or identifier of the evaluator"
-    },
     "overall_rating": {
       "type": "string",
-      "enum": ["pass", "conditional", "fail"],
+      "enum": [
+        "pass",
+        "conditional",
+        "fail"
+      ],
       "description": "High-level verdict for the implementation"
     },
     "summary": {
@@ -36,11 +30,24 @@
       "description": "List of PRD/requirements items and whether they are satisfied",
       "items": {
         "type": "object",
-        "required": ["requirement_id", "status"],
+        "required": [
+          "requirement_id",
+          "status"
+        ],
         "properties": {
-          "requirement_id": { "type": "string" },
-          "status": { "enum": ["met", "partially_met", "unmet"] },
-          "notes": { "type": "string" }
+          "requirement_id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "met",
+              "partially_met",
+              "unmet"
+            ]
+          },
+          "notes": {
+            "type": "string"
+          }
         }
       }
     },
@@ -49,90 +56,252 @@
       "description": "Concrete issues, gaps, or observations discovered during evaluation",
       "items": {
         "type": "object",
-        "required": ["id", "title", "severity", "description"],
+        "required": [
+          "id",
+          "title",
+          "severity",
+          "description",
+          "finding_type"
+        ],
         "properties": {
-          "id": { "type": "string" },
-          "title": { "type": "string" },
-          "description": { "type": "string" },
-          "severity": { "enum": ["critical", "high", "medium", "low"] },
-          "impact": { "type": "string" },
-          "files": { "type": "array", "items": { "type": "string" } },
-          "evidence": { "type": "string" }
+          "id": {
+            "type": "string",
+            "description": "A unique identifier for the finding, e.g., 'FIND-001'"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "impact": {
+            "type": "string"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence": {
+            "type": "string",
+            "description": "Format: <file>:<line-range> — <brief snippet or description>."
+          },
+          "finding_type": {
+            "enum": [
+              "conformance",
+              "architecture",
+              "security",
+              "quality",
+              "dependency",
+              "test"
+            ]
+          }
         }
       }
     },
     "test_results": {
       "type": "object",
       "description": "Summary of test executions and coverage",
+      "required": [
+        "id"
+      ],
       "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identifier for the test suite or execution, e.g., 'TEST-001'"
+        },
         "unit": {
           "type": "object",
+          "required": [
+            "status"
+          ],
           "properties": {
-            "status": { "enum": ["passed", "failed", "partial"] },
-            "passing": { "type": "integer" },
-            "failing": { "type": "integer" },
-            "coverage_pct": { "type": "number", "minimum": 0, "maximum": 100 }
+            "status": {
+              "enum": [
+                "passed",
+                "failed",
+                "partial"
+              ]
+            },
+            "passing": {
+              "type": "integer"
+            },
+            "failing": {
+              "type": "integer"
+            },
+            "coverage_pct": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
           }
         },
         "integration": {
           "type": "object",
+          "required": [
+            "status"
+          ],
           "properties": {
-            "status": { "enum": ["passed", "failed", "partial"] },
-            "notes": { "type": "string" }
+            "status": {
+              "enum": [
+                "passed",
+                "failed",
+                "partial"
+              ]
+            },
+            "notes": {
+              "type": "string"
+            }
           }
         },
         "e2e": {
           "type": "object",
+          "required": [
+            "status"
+          ],
           "properties": {
-            "status": { "enum": ["passed", "failed", "partial"] },
-            "notes": { "type": "string" }
+            "status": {
+              "enum": [
+                "passed",
+                "failed",
+                "partial"
+              ]
+            },
+            "notes": {
+              "type": "string"
+            }
           }
         }
-      }
-    },
-    "metrics": {
-      "type": "object",
-      "description": "Numeric metrics or KPIs relevant to acceptance",
-      "additionalProperties": { "type": ["number", "string"] }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "unit"
+          ]
+        },
+        {
+          "required": [
+            "integration"
+          ]
+        },
+        {
+          "required": [
+            "e2e"
+          ]
+        }
+      ]
     },
     "recommendations": {
       "type": "array",
       "description": "Prioritized, actionable recommendations to remediate findings",
       "items": {
         "type": "object",
-        "required": ["id", "action", "priority"],
+        "required": [
+          "id",
+          "action",
+          "priority"
+        ],
         "properties": {
-          "id": { "type": "string" },
-          "action": { "type": "string" },
-          "priority": { "enum": ["urgent", "high", "medium", "low"] },
-          "owner": { "type": "string" },
-          "verification": { "type": "string" }
-        }
-      }
-    },
-    "dependencies_issues": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": { "type": "string" },
-          "type": { "enum": ["external", "internal"] },
-          "version": { "type": "string" },
-          "risk": { "type": "string" },
-          "recommendation": { "type": "string" }
+          "id": {
+            "type": "string",
+            "description": "A unique identifier for the recommendation, e.g., 'REC-001'"
+          },
+          "action": {
+            "type": "string"
+          },
+          "priority": {
+            "enum": [
+              "urgent",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "verification": {
+            "type": "string"
+          },
+          "linked_finding_ids": {
+            "type": "array",
+            "description": "IDs of findings this recommendation addresses",
+            "items": {
+              "type": "string"
+            }
+          }
         }
       }
     },
     "quality_standards": {
       "type": "object",
+      "required": [
+        "documentation",
+        "test_coverage_target",
+        "iso_25010"
+      ],
       "properties": {
-        "coding_standards": { "type": "array", "items": { "type": "string" } },
-        "documentation": { "type": "string" },
-        "test_coverage_target": { "type": "number", "minimum": 0, "maximum": 100 }
+        "documentation": {
+          "type": "string"
+        },
+        "test_coverage_target": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "iso_25010": {
+          "type": "object",
+          "required": [
+            "functional_suitability",
+            "performance_efficiency",
+            "compatibility",
+            "usability",
+            "reliability",
+            "security",
+            "maintainability",
+            "portability"
+          ],
+          "properties": {
+            "functional_suitability": {
+              "type": "string"
+            },
+            "performance_efficiency": {
+              "type": "string"
+            },
+            "compatibility": {
+              "type": "string"
+            },
+            "usability": {
+              "type": "string"
+            },
+            "reliability": {
+              "type": "string"
+            },
+            "security": {
+              "type": "string"
+            },
+            "maintainability": {
+              "type": "string"
+            },
+            "portability": {
+              "type": "string"
+            }
+          }
+        }
       }
     },
     "next": {
       "type": "string",
+      "enum": [
+        "finish",
+        "revise"
+      ],
       "description": "Indicates the next phase to execute. Can ONLY be 'finish' or 'revise'. If 'finish', the pipeline will proceed to finish. If 'revise', the pipeline will loop back to the revise phase for further improvements."
     }
   },

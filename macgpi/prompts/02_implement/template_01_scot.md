@@ -18,14 +18,43 @@ However, you must **not** write production source code yet. Instead, write SCoT 
 
 Generate structured implementation-reasoning artifacts that translate the PRD and implementation plan into code-oriented solving processes.
 
+All SCoT artifacts in this stage must be **unit-level SCoT**. This means each artifact must decompose reasoning to the level of concrete implementation units (for example: functions, methods, handlers, validators, mappers, query builders, and test cases), not only file-level summaries.
+
+All unit-level SCoT artifacts must also use **ReAct-style reasoning** (Reason + Act + Observe) to make decision-making explicit and verifiable.
+
 Each SCoT artifact must be written using program-structure concepts from Structured Chain-of-Thought prompting:
 
 1. **Input / Output Structure**
-2. **Sequence Structure**
-3. **Branch Structure**
-4. **Loop Structure**
+2. **Structure (Sequence structure, Branch structure, Loop structure)**
 
 The purpose of these artifacts is to make the later implementation phase precise, ordered, and testable.
+
+For each implementation unit, provide a concise implementation trace, representing a classic ReAct loop:
+
+Reason:
+  - The implementation choice to make and why, without private chain-of-thought.
+
+Act:
+  - Concrete implementation action to perform.
+
+Observation:
+  - Expected result, test signal, or feedback from the action.
+
+Use as many ReAct iterations as needed per unit until the unit reaches a clear completion condition.
+
+Use the following unit-level SCoT example as a reference for granularity and structure:
+
+```text
+Unit: first_Repeated_Char(str):
+Description: A python function to find the first repeated character in a given string.
+
+Input: str: a string
+Output: ch: a repeated character in str
+1: for each character ch in str:
+2:   if ch appears more than once in str:
+3:     return ch
+4: return None
+```
 
 ## Core File-Writing Requirement
 
@@ -114,7 +143,6 @@ Eventual implementation structure:
   src/services/user-service.ts
   src/routes/users.ts
   tests/user-service.test.ts
-  README.md
 
 SCoT files to create now:
   {{ output_dir }}/src/config.ts.scot.md
@@ -145,6 +173,16 @@ The index file must not contain final source code.
 ## 3. Write Per-File SCoT Artifacts
 
 Each per-file SCoT artifact must use the structure below.
+
+Within each file artifact, include unit-level SCoT breakdowns for the concrete implementation units that will exist in that file.
+
+Examples of units to cover when applicable:
+
+- Source files: functions, classes, methods, handlers, service operations, utility helpers
+- Test files: test groups, individual test cases, fixtures, setup/teardown helpers
+- Config/script files: loaders, validators, command steps, environment resolution logic
+
+For each unit, include at least one ReAct iteration and preferably multiple iterations when there are dependencies, branches, or non-trivial validation steps.
 
 ---
 
@@ -192,85 +230,39 @@ Constraints:
   - ...
 ```
 
-## 3. File-Level Implementation Sequence Structure
+## 3. Unit-Level Implementation Sequence Structure
 
-Break the eventual implementation of this file into an ordered sequence of concrete steps.
+A **unit** is a concrete implementation item that will exist inside this file: a function, method, class, handler, schema definition, validator, query builder, or test case. Do not treat the file as a whole as a single unit.
+
+Break the eventual implementation of this file into a set of units, with each unit having their own SCoTs.
 
 Use numbered steps.
 
-Each step must include:
+Each unit SCoT must include:
 
 ```text
-Step <n>: <implementation action>
-Purpose:
-  - ...
+Unit: ...
+Description: ...
 
-Inputs:
-  - ...
+Input: ...
+Output: ...
+1: ...
+2: ...
+...
 
-Outputs:
-  - ...
+Reasoning:
+1: Reason: ...
+1: Act: ...
+1: Observe ...
 
-Validation:
-  - ...
+2: Reason: ...
+2: Act: ...
+2. Observe: ...
+
+...
 ```
 
-The sequence must reflect dependency order within the file.
-
-## 4. File-Level Branch Structure
-
-Identify decision points, conditional behavior, error cases, and edge cases relevant to this file.
-
-Use this format:
-
-```text
-Branch: <condition or decision point>
-If:
-  - <condition>
-Then:
-  - <expected behavior>
-Else:
-  - <fallback or alternative behavior>
-Validation:
-  - <how this branch should be tested>
-```
-
-Include branches for:
-
-- Input validation
-- Missing or invalid configuration
-- Dependency failures
-- Empty or malformed data
-- Permission or environment issues, if applicable
-- Feature-specific conditional behavior described in the PRD or plan
-
-## 5. File-Level Loop Structure
-
-Identify repeated processes relevant to this file.
-
-Use this format:
-
-```text
-Loop: <repeated process>
-For each:
-  - <item being iterated>
-Do:
-  - <operation>
-Stop condition:
-  - ...
-Validation:
-  - ...
-```
-
-Include loops for:
-
-- Iterating over entities, records, files, routes, jobs, or tasks
-- Repeated validation
-- Batch processing
-- Retrying, polling, pagination, or scheduled workflows, if applicable
-- Test-case generation across multiple components
-
-## 6. File-Level Dependency Structure
+## 4. File-Level Dependency Structure
 
 Describe how this file depends on and supports other files.
 
@@ -293,7 +285,7 @@ Implementation order:
       - ...
 ```
 
-## 7. Testing Notes for This File
+## 5. Testing Notes for This File
 
 Describe how this file should be tested later.
 
@@ -309,8 +301,8 @@ Covers:
 
 Test cases:
   1. Given ...
-     When ...
-     Then ...
+    When ...
+    Then ...
 
 Required mocks or fixtures:
   - ...
@@ -320,7 +312,7 @@ For test files, describe the tests that the eventual test file will contain.
 
 For source files, describe which test files should validate this source file.
 
-## 8. Documentation Notes for This File
+## 6. Documentation Notes for This File
 
 Identify documentation that should exist for the eventual file.
 
@@ -338,60 +330,6 @@ Examples required:
   - ...
 ```
 
-## 9. Risks, Assumptions, and Clarifications
-
-List unresolved issues that may affect implementation of this file.
-
-Use this format:
-
-```text
-Risk / Assumption: <name>
-Description:
-  - ...
-
-Impact:
-  - ...
-
-Recommended handling:
-  - ...
-```
-
-## 10. Final File-Level SCoT Blueprint
-
-Conclude with a compact structured blueprint that a later code-generation step can follow.
-
-Use this format:
-
-```text
-Input:
-  - ...
-
-Output:
-  - ...
-
-Sequence:
-  1. ...
-  2. ...
-  3. ...
-
-Branches:
-  - If ... then ... else ...
-  - If ... then ... else ...
-
-Loops:
-  - For each ... do ...
-
-Validation:
-  - ...
-
-Ready for code generation:
-  - Yes / No
-
-If not ready:
-  - Blocking clarification:
-      - ...
-```
-
 ---
 
 # Final Output Rules
@@ -399,7 +337,7 @@ If not ready:
 When you run this prompt:
 
 1. Write the SCoT files to `{{ output_dir }}`.
-2. Create `{{ output_dir }}/SCOT_INDEX.md`.
+2. Create `{{ output_dir }}/SCOT_INDEX.scot.md`.
 3. Create one `*.scot.md` file for every eventual implementation file.
 4. Preserve the final implementation directory structure.
 5. Do not write source code, test code, or final documentation yet.

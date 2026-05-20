@@ -7,7 +7,9 @@
         "objectives",
         "architecture",
         "components",
-        "dependencies"
+        "dependencies",
+        "implementation_tasks",
+        "quality_standards"
     ],
     "properties": {
         "objectives": {
@@ -15,23 +17,59 @@
             "description": "Primary goals and requirements for the software artifact",
             "items": {
                 "type": "object",
-                "required": ["id", "description", "priority"],
+                "required": [
+                    "id",
+                    "description",
+                    "priority"
+                ],
                 "properties": {
-                    "id": { "type": "string" },
-                    "description": { "type": "string" },
-                    "priority": { "enum": ["high", "medium", "low"] },
-                    "metrics": { "type": "array", "items": { "type": "string" } }
+                    "id": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "priority": {
+                        "enum": [
+                            "high",
+                            "medium",
+                            "low"
+                        ]
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
                 }
             }
         },
         "architecture": {
             "type": "object",
             "description": "High-level architectural decisions",
-            "required": ["pattern", "rationale"],
+            "required": [
+                "pattern",
+                "rationale"
+            ],
             "properties": {
-                "pattern": { "type": "string", "examples": ["MVC", "microservices", "layered"] },
-                "rationale": { "type": "string" },
-                "constraints": { "type": "array", "items": { "type": "string" } }
+                "pattern": {
+                    "type": "string",
+                    "examples": [
+                        "MVC",
+                        "microservices",
+                        "layered"
+                    ]
+                },
+                "rationale": {
+                    "type": "string"
+                },
+                "constraints": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
             }
         },
         "components": {
@@ -39,12 +77,26 @@
             "description": "Planned components and modules",
             "items": {
                 "type": "object",
-                "required": ["name", "responsibility"],
+                "required": [
+                    "name",
+                    "responsibility"
+                ],
                 "properties": {
-                    "name": { "type": "string" },
-                    "responsibility": { "type": "string" },
-                    "interfaces": { "type": "array", "items": { "type": "string" } },
-                    "testability": { "type": "string" }
+                    "name": {
+                        "type": "string"
+                    },
+                    "responsibility": {
+                        "type": "string"
+                    },
+                    "interfaces": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "testability": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -53,12 +105,67 @@
             "description": "External libraries and internal component dependencies",
             "items": {
                 "type": "object",
-                "required": ["name", "type"],
+                "required": [
+                    "name",
+                    "type"
+                ],
                 "properties": {
-                    "name": { "type": "string" },
-                    "type": { "enum": ["external", "internal"] },
-                    "version": { "type": "string" },
-                    "justification": { "type": "string" }
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "enum": [
+                            "external",
+                            "internal"
+                        ]
+                    },
+                    "version": {
+                        "type": "string"
+                    },
+                    "justification": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "implementation_tasks": {
+            "type": "array",
+            "description": "Ordered list of concrete implementation tasks derived from the components and architecture",
+            "items": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "title",
+                    "component",
+                    "description"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "component": {
+                        "type": "string",
+                        "description": "Name of the component this task belongs to"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "depends_on": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "IDs of tasks that must be completed before this one"
+                    },
+                    "acceptance_criteria": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
                 }
             }
         },
@@ -66,9 +173,24 @@
             "type": "object",
             "description": "Maintainability and quality benchmarks",
             "properties": {
-                "coding_standards": { "type": "array", "items": { "type": "string" } },
-                "documentation_level": { "enum": ["minimal", "standard", "comprehensive"] },
-                "test_coverage_target": { "type": "number", "minimum": 0, "maximum": 100 }
+                "coding_standards": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "documentation_level": {
+                    "enum": [
+                        "minimal",
+                        "standard",
+                        "comprehensive"
+                    ]
+                },
+                "test_coverage_target": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                }
             }
         }
     }

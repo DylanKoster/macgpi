@@ -33,7 +33,7 @@ class TestParsePhaseConfig:
         assert "inputs" in plan_phase
         assert "schema" in plan_phase
         assert "path" in plan_phase
-        assert "output_path" in plan_phase
+        assert "output_file" in plan_phase
         assert "next" in plan_phase
 
     def test_parse_config_with_none(self, temp_dir):

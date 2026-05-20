@@ -27,4 +27,4 @@ Provide your revised implementation as follows:
 Use proper code formatting with syntax highlighting for each file.
 
 ## Output location
-**IMPORTANT:** ONLY WRITE YOUR RESULTS TO {{ output_path }}
+**IMPORTANT:** ONLY WRITE YOUR RESULTS TO {{ output_dir }}

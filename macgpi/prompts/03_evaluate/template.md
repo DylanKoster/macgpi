@@ -30,4 +30,4 @@ The following schema MUST be followed.
 {{ schema_format }}
 
 ## Output location
-**IMPORTANT:** ONLY WRITE YOUR RESULTS TO {{ output_path }}
+**IMPORTANT:** ONLY WRITE YOUR RESULTS TO {{ output_file }}

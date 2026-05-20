@@ -46,8 +46,11 @@ def parse_phase_config(config_file: str | None) -> dict:
 
 def is_phase_dir(path: str, schema_required: bool = True) -> bool:
     '''
-    Tests whether the given path is a valid phase directory. A directory is a valid phase directory iff it contains both
-    a "template.md" file. If schema_required is true, it must also contain a "schema.json" file.
+    Tests whether the given path is a valid phase directory. A directory is a valid phase directory if it contains at
+    least one file that starts with "template" and ends with ".md", which is used as the prompt template for the phase.
+    If schema_required is true, the directory must also contain a "schema.json" file, which is used to validate the
+    output of the phase. If schema_required is false, the presence of the "schema.json" file is not required for the
+    directory to be considered a valid phase directory.
     '''
     is_phase_dir: bool = os.path.isdir(path)
     if not is_phase_dir:

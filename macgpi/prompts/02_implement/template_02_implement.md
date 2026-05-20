@@ -13,11 +13,11 @@ The previous stage generated SCoT planning files that describe the intended impl
 - **IMPLEMENTATION PLAN**: `{{ implementation_plan }}`
 
 
-- **OUTPUT PATH**: `{{ output_path }}`
+- **OUTPUT PATH**: `{{ output_dir }}`
 
 ## Goal
 
-Translate the SCoT files under `{{ output_path }}` into working source code, tests, configuration, scripts, and documentation under `{{ output_path }}`.
+Translate the SCoT files under `{{ output_dir }}` into working source code, tests, configuration, scripts, and documentation under `{{ output_dir }}`.
 
 The SCoT files are planning artifacts only. They should guide implementation, but they are not the final output.
 
@@ -25,10 +25,10 @@ The SCoT files are planning artifacts only. They should guide implementation, bu
 
 You must:
 
-1. Read `{{ output_path }}/SCOT_INDEX.md`.
+1. Read `{{ output_dir }}/SCOT_INDEX.md`.
 2. Read every `*.scot.md` file referenced by the index.
 3. Derive the final implementation file paths from the SCoT files.
-4. Create the corresponding real implementation files under `{{ output_path }}`.
+4. Create the corresponding real implementation files under `{{ output_dir }}`.
 5. Preserve the directory structure described by the SCoT artifacts.
 6. Implement all required functionality from the PRD, implementation plan, and SCoT files.
 7. Include tests, configuration, scripts, and documentation where the SCoT files call for them.
@@ -53,17 +53,17 @@ Final implementation file:
 Examples:
 
 ```text
-{{ output_path }}/src/config.ts.scot.md
-  -> {{ output_path }}/src/config.ts
+{{ output_dir }}/src/config.ts.scot.md
+  -> {{ output_dir }}/src/config.ts
 
-{{ output_path }}/src/routes/health.ts.scot.md
-  -> {{ output_path }}/src/routes/health.ts
+{{ output_dir }}/src/routes/health.ts.scot.md
+  -> {{ output_dir }}/src/routes/health.ts
 
-{{ output_path }}/tests/health.test.ts.scot.md
-  -> {{ output_path }}/tests/health.test.ts
+{{ output_dir }}/tests/health.test.ts.scot.md
+  -> {{ output_dir }}/tests/health.test.ts
 
-{{ output_path }}/README.md.scot.md
-  -> {{ output_path }}/README.md
+{{ output_dir }}/README.md.scot.md
+  -> {{ output_dir }}/README.md
 ```
 
 Do not copy the SCoT text into the final files. Use it as the blueprint for the actual implementation.
@@ -158,13 +158,13 @@ If a SCoT artifact is clearly technically flawed, make a pragmatic correction an
 You must write files to:
 
 ```text
-{{ output_path }}
+{{ output_dir }}
 ```
 
 You must not write files outside:
 
 ```text
-{{ output_path }}
+{{ output_dir }}
 ```
 
 Do not write SCoT artifacts into the output path unless explicitly required as documentation.

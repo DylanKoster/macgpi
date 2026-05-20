@@ -41,10 +41,24 @@ class TestTemplateManagerRender:
             "01_plan/",
             system_prd="Test project description",
             template_file="template.md",
+            output_file="output.json"
         )
 
         assert "Test project description" in result
         assert "# Plan phase" in result
+        assert "output.json" in result
+
+        result = manager.render(
+            "02_implement/",
+            system_prd="Test project description",
+            template_file="template_01.md",
+            implementation_plan="test plan",
+            output_dir="output"
+        )
+
+        assert "Test project description" in result
+        assert "# Implement phase" in result
+        assert "test plan" in result
 
     def test_render_with_schema(self, temp_prompts_dir):
         """Test rendering template with schema available."""
@@ -52,7 +66,7 @@ class TestTemplateManagerRender:
 
         # Provide required system_prd variable
         result = manager.render("01_plan/",
-                                template_file="template.md", system_prd="Test project")
+                                template_file="template.md", system_prd="Test project", output_file="output.json")
 
         # Verify template renders with schema available
         assert "# Plan phase" in result
@@ -68,7 +82,8 @@ class TestTemplateManagerRender:
             "02_implement/",
             system_prd="Project description",
             template_file="template_01.md",
-            implementation_plan="test plan"
+            implementation_plan="test plan",
+            output_dir="output/"
         )
 
         assert "test plan" in result
@@ -82,11 +97,13 @@ class TestTemplateManagerRender:
             "02_implement/",
             system_prd="Project description",
             template_file="template_02.md",
-            implementation_plan="Implementation details"
+            implementation_plan="Implementation details",
+            output_dir="output/"
         )
 
         assert "Project description" in result
         assert "Implementation details" in result
+        assert "output/" in result
 
     def test_render_undefined_variable_raises_error(self, temp_prompts_dir):
         """Test that undefined variables raise error with StrictUndefined."""

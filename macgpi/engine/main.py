@@ -7,7 +7,7 @@ from macgpi.engine.agent_manager import AgentManager
 from macgpi.engine.vllm import vllm_health
 from macgpi.engine.template_manager import TemplateManager
 from macgpi.engine.phase_utils import (get_next_phase, get_phase_prompts, is_finished_phase, is_phase_dir,
-                                       parse_phase_config, read_phase_inputs)
+                                       parse_phase_config, read_phase_inputs, validate_output_file)
 
 logger = logging.getLogger(__name__)
 
@@ -71,51 +71,19 @@ class MACGPi:
             # -------------------------------------
             # vLLM host connection health check
             # -------------------------------------
-            logger.debug(
-                f"Attempting to connect to model server at {self.model_host}:{self.model_port}...")
-            if not vllm_health(self.model_host, self.model_port):
-                logger.error(f"Cannot reach vLLM server. Start a server on {self.model_host}:{self.model_port} or "
-                             + "update the host "
-                             + "and port parameters accordingly.")
+            if not self.test_vllm_connection():
                 return False
 
             # -------------------------------------
             # Phase configuration parsing
             # -------------------------------------
-            logger.debug("Parsing phase configuration...")
-
-            macgpi_config: dict = parse_phase_config(self.phases_config_file)
-            phases_config: dict = macgpi_config["phases"]
-            self.phase_visits: dict = {
-                phase_name: 0 for phase_name in phases_config.keys()}
-
-            logger.debug("Phase configuration parsed successfully.")
+            phases_config = self.load_phases_config()
 
             # -------------------------------------
             # Pre-execution validation check
             # -------------------------------------
-            logger.debug("Executing pre-execution validation checks")
-
-            if (self.templateManager is None or self.agentManager is None):
-                logger.error("MACGPi was not initialized successfully, cannot run pipeline.")
+            if not self.pre_execution_validation(phases_config):
                 return False
-
-            # Test whether all phases contain valid phase directories
-            for phase in phases_config.keys():
-                logger.debug(f"Checking phase validity of phase \"{phase}\"")
-
-                phase_config: dict = phases_config[phase]
-                phase_path: str = os.path.join(
-                    self.templateManager.prompt_dir, phase_config["path"])
-                schema_required: bool = phase_config["schema"]
-
-                if (not is_phase_dir(phase_path, schema_required=schema_required)):
-                    logger.error(f"Phase {phase} is not a valid phase directory in {self.templateManager.prompt_dir}. "
-                                 + "Please ensure that it contains both a template.md file"
-                                 + f"{" and a schema.json file" if schema_required else ''}.")
-                    return False
-
-            logger.debug("Pre-validation checks OK")
 
             # -------------------------------------
             # MACGPi phase execution
@@ -123,19 +91,7 @@ class MACGPi:
             logger.info("Starting MACGPi execution")
 
             # Write PRD to output dir
-            logger.debug(
-                f"Writing project description to output directory at {self.output_dir}...")
-            project_description_path: str = os.path.join(
-                self.output_dir, "docs", "project_description.md")
-
-            if not os.path.exists(project_description_path):
-                os.makedirs(os.path.dirname(
-                    project_description_path), exist_ok=True)
-
-            with open(project_description_path, "w") as f:
-                f.write(self.input_description)
-
-            logger.debug("Done!")
+            self.write_input_to_output_dir()
 
             phase: str = list(phases_config.keys())[0]
             while not is_finished_phase(phase):
@@ -156,12 +112,9 @@ class MACGPi:
 
                 self.phase_visits[phase] += 1
 
-                logger.debug(
-                    f"Phase config for phase {phase}:\n{json.dumps(phase_config, indent=4)}")
-
-                output_path: str | None = self.output_dir
-                if "output_path" in phase_config.keys():
-                    output_path = self.output_dir + "/" + phase_config["output_path"]
+                output_file = None
+                if "output_file" in phase_config.keys():
+                    output_file = self.output_dir + "/" + phase_config["output_file"]
 
                 inputs: dict = read_phase_inputs(
                     phase_config["inputs"], self.output_dir)
@@ -169,11 +122,20 @@ class MACGPi:
                 prompts: list[str] = get_phase_prompts(os.path.join(
                     self.templateManager.prompt_dir, phase_config["path"]))
                 for prompt_file in prompts:
-                    logger.info(
-                        f"Running prompt {prompt_file} for phase {phase}...")
+                    logger.info(f"Running prompt {prompt_file} for phase {phase}...")
                     template_output: str = self.templateManager.render(phase_config["path"], template_file=prompt_file,
-                                                                       output_path=output_path, **inputs)
+                                                                       output_file=output_file, **inputs)
                     self.agentManager.run(template_output)
+
+                # If the phase requires schema validation of the output, validate the output and re-run the phase if it
+                # fails
+                if phase_config.get("schema", False) and output_file is not None:
+                    schema_path: str = os.path.join(self.templateManager.prompt_dir,
+                                                    phase_config["path"], "schema.json")
+
+                    if not self.validate_output(output_file, schema_path, phase):
+                        self.phase_visits[phase] -= 1
+                        continue
 
                 logger.info(f"Finished phase {phase}.")
                 phase = get_next_phase(phase_config, output_dir=self.output_dir)
@@ -191,3 +153,106 @@ class MACGPi:
         Returns the number of visits for each phase.
         '''
         return self.phase_visits
+
+    def test_vllm_connection(self) -> bool:
+        '''
+        Tests the connection to the vLLM server specified by the model_host and model_port parameters. Returns True if
+        the connection test succeeds, and False if it fails.
+        '''
+        logger.debug(
+            f"Attempting to connect to model server at {self.model_host}:{self.model_port}...")
+
+        if not vllm_health(self.model_host, self.model_port):
+            logger.error(f"Cannot reach vLLM server. Start a server on {self.model_host}:{self.model_port} or "
+                         + "update the host "
+                         + "and port parameters accordingly.")
+            return False
+
+        return True
+
+    def validate_phases(self, phases_config: dict) -> bool:
+        '''
+        Validates that all phases specified in the phase configuration contain valid phase directories. A valid phase
+        directory is a directory that contains at least a template.md file, and if the phase requires a schema, also
+        contains a schema.json file. Returns True if all phases are valid, and False otherwise.
+        '''
+        for phase in phases_config.keys():
+            logger.debug(f"Checking phase validity of phase \"{phase}\"")
+
+            phase_config: dict = phases_config[phase]
+            phase_path: str = os.path.join(
+                self.templateManager.prompt_dir, phase_config["path"])
+            schema_required: bool = phase_config["schema"]
+
+            if (not is_phase_dir(phase_path, schema_required=schema_required)):
+                logger.error(f"Phase {phase} is not a valid phase directory in {self.templateManager.prompt_dir}. "
+                             + "Please ensure that it contains both a template.md file"
+                             + f"{" and a schema.json file" if schema_required else ''}.")
+                return False
+
+        return True
+
+    def validate_output(self, output_path: str, schema_path: str, phase: str) -> bool:
+        '''
+        Validates the output of a phase against the specified schema. Returns True if the output is valid, and False
+        if it is not.
+        '''
+        with open(schema_path, "r") as schema_file, open(output_path, "r") as output_file:
+            schema_dict: dict = json.load(schema_file)
+            output_dict: dict = json.load(output_file)
+            valid: bool = validate_output_file(output_dict, schema_dict)
+
+            # Output not correct according to schema, re-run phase
+            if not valid:
+                logger.warning(f"Output for phase {phase} did not validate against the schema. Re-running phase...")
+                return False
+
+        return True
+
+    def load_phases_config(self) -> dict:
+        '''
+        Loads the phase configuration from the specified configuration file, or from the default configuration if no
+        file is specified. Returns the loaded phase configuration as a dictionary.
+        '''
+        logger.debug("Parsing phase configuration...")
+
+        macgpi_config: dict = parse_phase_config(self.phases_config)
+        phases_config: dict = macgpi_config["phases"]
+        self.phase_visits: dict = {phase_name: 0 for phase_name in phases_config.keys()}
+
+        logger.debug("Phase configuration parsed successfully.")
+
+        return phases_config
+
+    def pre_execution_validation(self, phases_config: dict) -> bool:
+        '''
+        Executes validation checks before running the pipeline, including validating the phase configuration and
+        testing if the template and agent managers were initialized successfully. Returns True if all validation checks
+        pass, and False if any check fails.
+        '''
+        logger.debug("Executing pre-execution validation checks")
+
+        if (self.templateManager is None or self.agentManager is None):
+            logger.error("MACGPi was not initialized successfully, cannot run pipeline.")
+            return False
+
+        # Test whether all phases contain valid phase directories
+        if not self.validate_phases(phases_config):
+            return False
+
+        logger.debug("Pre-execution validation checks OK")
+        return True
+
+    def write_input_to_output_dir(self) -> None:
+        '''
+        Writes the project description to the output directory. This is useful for providing the project description as
+        a reference for the prompts and agents during execution.
+        '''
+        logger.debug(f"Writing project description to output directory at {self.output_dir}...")
+
+        project_description_path: str = os.path.join(self.output_dir, "docs", "project_description.md")
+        os.makedirs(os.path.dirname(project_description_path), exist_ok=True)
+        with open(project_description_path, "w") as f:
+            f.write(self.input)
+
+        logger.debug("Done!")

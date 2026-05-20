@@ -48,7 +48,7 @@ def temp_prompts_dir(temp_dir):
     plan_phase = os.path.join(prompts_dir, "01_plan")
     os.makedirs(plan_phase)
     with open(os.path.join(plan_phase, "template.md"), "w") as f:
-        f.write("# Plan phase\n{{ system_prd }}\n{{ schema_format }}")
+        f.write("# Plan phase\n{{ system_prd }}\n{{ schema_format }}\n{{ output_file }}")
     with open(os.path.join(plan_phase, "schema.json"), "w") as f:
         json.dump({"type": "object"}, f)
 
@@ -57,16 +57,16 @@ def temp_prompts_dir(temp_dir):
     os.makedirs(impl_phase)
     with open(os.path.join(impl_phase, "template_01.md"), "w") as f:
         f.write(
-            "# Implement phase\n{{ system_prd }}\n{{ implementation_plan }}")
+            "# Implement phase\n{{ system_prd }}\n{{ implementation_plan }}\n{{ output_dir }}")
     with open(os.path.join(impl_phase, "template_02.md"), "w") as f:
         f.write(
-            "# Implement phase\n{{ system_prd }}\n{{ implementation_plan }}")
+            "# Implement phase\n{{ system_prd }}\n{{ implementation_plan }}\n{{ output_dir }}")
 
     # Create evaluate phase
     eval_phase = os.path.join(prompts_dir, "03_evaluate")
     os.makedirs(eval_phase)
     with open(os.path.join(eval_phase, "template.md"), "w") as f:
-        f.write("# Evaluate phase\n{{ system_prd }}\n{{ schema_format }}")
+        f.write("# Evaluate phase\n{{ system_prd }}\n{{ schema_format }}\n{{ output_file }}")
     with open(os.path.join(eval_phase, "schema.json"), "w") as f:
         json.dump({"type": "object"}, f)
 
@@ -74,7 +74,8 @@ def temp_prompts_dir(temp_dir):
     revise_phase = os.path.join(prompts_dir, "04_revise")
     os.makedirs(revise_phase)
     with open(os.path.join(revise_phase, "template.md"), "w") as f:
-        f.write("# Revise phase\n{{ system_prd }}\n{{ implementation_plan }}\n{{ evaluation_report }}")
+        f.write(
+            "# Revise phase\n{{ system_prd }}\n{{ implementation_plan }}\n{{ evaluation_report }}\n{{ output_dir }}")
 
     # Create finally phase (executes after max visits exceeded in evaluate phase)
     finally_phase = os.path.join(prompts_dir, "05_finally")
@@ -106,7 +107,7 @@ def sample_phase_config(temp_dir):
                 },
                 "schema": True,
                 "path": "01_plan/",
-                "output_path": "docs/plan.json",
+                "output_file": "docs/plan.json",
                 "next": "implement"
             },
             "implement": {
@@ -124,7 +125,7 @@ def sample_phase_config(temp_dir):
                 },
                 "schema": True,
                 "path": "03_evaluate/",
-                "output_path": "docs/evaluation_report.json",
+                "output_file": "docs/evaluation_report.json",
                 "next": "revise",
                 "max_visits": 3,
                 "max_visits_exceeded_next": "finally"

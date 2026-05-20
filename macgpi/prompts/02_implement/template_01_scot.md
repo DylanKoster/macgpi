@@ -58,7 +58,7 @@ Output: ch: a repeated character in str
 
 ## Core File-Writing Requirement
 
-You must write your SCoT artifacts into `{{ output_path }}`.
+You must write your SCoT artifacts into `{{ output_dir }}`.
 
 The SCoT files must be located in the same directory structure where the eventual implementation files will be created.
 
@@ -145,10 +145,11 @@ Eventual implementation structure:
   tests/user-service.test.ts
 
 SCoT files to create now:
-  {{ output_path }}/src/config.ts.scot.md
-  {{ output_path }}/src/services/user-service.ts.scot.md
-  {{ output_path }}/src/routes/users.ts.scot.md
-  {{ output_path }}/tests/user-service.test.ts.scot.md
+  {{ output_dir }}/src/config.ts.scot.md
+  {{ output_dir }}/src/services/user-service.ts.scot.md
+  {{ output_dir }}/src/routes/users.ts.scot.md
+  {{ output_dir }}/tests/user-service.test.ts.scot.md
+  {{ output_dir }}/README.md.scot.md
 ```
 
 ## 2. Write a Root Index File
@@ -156,7 +157,7 @@ SCoT files to create now:
 Create this file:
 
 ```text
-{{ output_path }}/SCOT_INDEX.scot.md
+{{ output_dir }}/SCOT_INDEX.scot.md
 ```
 
 This file must summarize:
@@ -335,13 +336,13 @@ Examples required:
 
 When you run this prompt:
 
-1. Write the SCoT files to `{{ output_path }}`.
-2. Create `{{ output_path }}/SCOT_INDEX.scot.md`.
+1. Write the SCoT files to `{{ output_dir }}`.
+2. Create `{{ output_dir }}/SCOT_INDEX.scot.md`.
 3. Create one `*.scot.md` file for every eventual implementation file.
 4. Preserve the final implementation directory structure.
 5. Do not write source code, test code, or final documentation yet.
 6. Do not output the SCoT only in chat.
-7. Do not write outside `{{ output_path }}`.
+7. Do not write outside `{{ output_dir }}`.
 8. The final chat response, if any, should only summarize the files written.
 
 The generated output must be a file-based SCoT artifact set, not a single monolithic response.

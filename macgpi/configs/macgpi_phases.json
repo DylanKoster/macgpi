@@ -6,7 +6,7 @@
             },
             "schema": true,
             "path": "01_plan/",
-            "output_path": "docs/implementation_plan.json",
+            "output_file": "docs/implementation_plan.json",
             "next": "implement"
         },
         "implement": {
@@ -25,7 +25,7 @@
             },
             "schema": true,
             "path": "03_evaluate/",
-            "output_path": "docs/evaluation_report.json",
+            "output_file": "docs/evaluation_report.json",
             "next": "dynamic",
             "max_visits": 3,
             "max_visits_exceeded_next": "finish"

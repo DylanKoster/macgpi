@@ -3,6 +3,8 @@ import json
 import logging
 import os
 
+import jsonschema
+
 logger = logging.getLogger(__name__)
 
 
@@ -44,8 +46,11 @@ def parse_phase_config(config_file: str | None) -> dict:
 
 def is_phase_dir(path: str, schema_required: bool = True) -> bool:
     '''
-    Tests whether the given path is a valid phase directory. A directory is a valid phase directory iff it contains both
-    a "template.md" file. If schema_required is true, it must also contain a "schema.json" file.
+    Tests whether the given path is a valid phase directory. A directory is a valid phase directory if it contains at
+    least one file that starts with "template" and ends with ".md", which is used as the prompt template for the phase.
+    If schema_required is true, the directory must also contain a "schema.json" file, which is used to validate the
+    output of the phase. If schema_required is false, the presence of the "schema.json" file is not required for the
+    directory to be considered a valid phase directory.
     '''
     is_phase_dir: bool = os.path.isdir(path)
     if not is_phase_dir:
@@ -135,3 +140,16 @@ def get_phase_prompts(phase_path: str) -> list[str]:
         "template") and file.endswith(".md")]
     prompt_files.sort()
     return prompt_files
+
+
+def validate_output_file(output_content: dict, schema: dict) -> bool:
+    '''
+    Validates the output of a phase against the given schema. The function returns true if the output is valid
+    according to the schema, and false otherwise.
+    '''
+    try:
+        jsonschema.validate(instance=output_content, schema=schema)
+        return True
+    except jsonschema.ValidationError as e:
+        logger.error(f"Output validation error: {e}")
+        return False

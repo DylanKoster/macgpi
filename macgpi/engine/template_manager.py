@@ -21,8 +21,7 @@ class TemplateManager:
     def __init__(self, prompt_dir: str | None = None):
         # Resolve prompts directory relative to this module if not provided
         if prompt_dir is None:
-            prompt_dir = os.path.normpath(os.path.join(
-                os.path.dirname(__file__), "..", "prompts"))
+            prompt_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "prompts"))
 
         self.prompt_dir = prompt_dir
 

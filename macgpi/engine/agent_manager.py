@@ -14,8 +14,7 @@ class AgentManager:
 
     def __init__(self, model_name: str, model_host: str = "localhost", model_port: int = 8000,
                  model_config_file: str | None = None, agent_config_file: str | None = None):
-        self.load_model_config(
-            model_config_file, model_name, model_host, model_port)
+        self.load_model_config(model_config_file, model_name, model_host, model_port)
         self.load_agent_config(agent_config_file)
 
         self.agent = DefaultAgent(
@@ -57,8 +56,7 @@ class AgentManager:
         }
 
         if model_config_file is None:
-            model_config_file = os.path.join(os.path.dirname(
-                __file__), "..", "configs", "model.config.yaml")
+            model_config_file = os.path.join(os.path.dirname(__file__), "..", "configs", "model.config.yaml")
 
         with open(model_config_file, "r") as f:
             model_config: dict = yaml.safe_load(f)
@@ -74,8 +72,7 @@ class AgentManager:
             agent_config_file (str | None): The path to the agent configuration file. If None, a default path is used.
         '''
         if agent_config_file is None:
-            agent_config_file = os.path.join(os.path.dirname(
-                __file__), "..", "configs", "agent.config.yaml")
+            agent_config_file = os.path.join(os.path.dirname(__file__), "..", "configs", "agent.config.yaml")
 
         with open(agent_config_file, "r") as f:
             agent_config: dict = yaml.safe_load(f)

@@ -54,14 +54,12 @@ class MACGPi:
 
         # Instantiating managers
         try:
-            self.templateManager: TemplateManager = TemplateManager(
-                prompt_dir=self.prompt_dir)
+            self.templateManager: TemplateManager = TemplateManager(prompt_dir=self.prompt_dir)
             self.agentManager: AgentManager = AgentManager(self.model_name, model_host=model_host,
                                                            model_port=model_port, model_config_file=model_config_file,
                                                            agent_config_file=agent_config_file)
         except Exception:
-            logger.error(
-                f"An error occurred while initializing MACGPi:\nError {traceback.format_exc()}")
+            logger.error(f"An error occurred while initializing MACGPi:\nError {traceback.format_exc()}")
 
     def run(self) -> bool:
         '''
@@ -102,11 +100,9 @@ class MACGPi:
                 # max_visits_exceeded_next
                 max_visits: int = phase_config.get("max_visits", 1)
                 if (self.phase_visits[phase] >= max_visits):
-                    next_phase = phase_config.get(
-                        "max_visits_exceeded_next", "finish")
-                    logger.info(
-                        f"Max visits exceeded for phase {phase}, moving to max_visits_exceeded_next phase "
-                        + f"{next_phase}...")
+                    next_phase = phase_config.get("max_visits_exceeded_next", "finish")
+                    logger.info(f"Max visits exceeded for phase {phase}, moving to max_visits_exceeded_next phase "
+                                + f"{next_phase}...")
                     phase = next_phase
                     continue
 
@@ -116,17 +112,14 @@ class MACGPi:
 
                 output_file = None
                 if "output_file" in phase_config.keys():
-                    output_file = self.output_dir + \
-                        "/" + phase_config["output_file"]
+                    output_file = os.path.join(self.output_dir, phase_config["output_file"])
 
-                inputs: dict = read_phase_inputs(
-                    phase_config["inputs"], self.output_dir)
+                inputs: dict = read_phase_inputs(phase_config["inputs"], self.output_dir)
 
                 prompts: list[str] = get_phase_prompts(os.path.join(
                     self.templateManager.prompt_dir, phase_config["path"]))
                 for prompt_file in prompts:
-                    logger.info(
-                        f"Running prompt {prompt_file} for phase {phase}...")
+                    logger.info(f"Running prompt {prompt_file} for phase {phase}...")
                     template_output: str = self.templateManager.render(phase_config["path"], template_file=prompt_file,
                                                                        output_file=output_file, **inputs)
                     self.agentManager.run(template_output)
@@ -145,12 +138,10 @@ class MACGPi:
                 phase = get_next_phase(
                     phase_config, output_dir=self.output_dir)
 
-            logger.info(
-                f"MACGPi execution finished, result copied to {self.output_dir}")
+            logger.info(f"MACGPi execution finished, result copied to {self.output_dir}")
             return True
         except Exception:
-            logger.error(
-                f"An error occured while executing MACGPi:\nError {traceback.format_exc()}")
+            logger.error(f"An error occured while executing MACGPi:\nError {traceback.format_exc()}")
             return False
 
     def get_phase_visits(self) -> dict:
@@ -164,8 +155,7 @@ class MACGPi:
         Tests the connection to the vLLM server specified by the model_host and model_port parameters. Returns True if
         the connection test succeeds, and False if it fails.
         '''
-        logger.debug(
-            f"Attempting to connect to model server at {self.model_host}:{self.model_port}...")
+        logger.debug(f"Attempting to connect to model server at {self.model_host}:{self.model_port}...")
 
         if not vllm_health(self.model_host, self.model_port):
             logger.error(f"Cannot reach vLLM server. Start a server on {self.model_host}:{self.model_port} or "
@@ -185,8 +175,7 @@ class MACGPi:
             logger.debug(f"Checking phase validity of phase \"{phase}\"")
 
             phase_config: dict = phases_config[phase]
-            phase_path: str = os.path.join(
-                self.templateManager.prompt_dir, phase_config["path"])
+            phase_path: str = os.path.join(self.templateManager.prompt_dir, phase_config["path"])
             schema_required: bool = phase_config["schema"]
 
             if (not is_phase_dir(phase_path, schema_required=schema_required)):
@@ -209,8 +198,7 @@ class MACGPi:
 
             # Output not correct according to schema, re-run phase
             if not valid:
-                logger.warning(
-                    f"Output for phase {phase} did not validate against the schema. Re-running phase...")
+                logger.warning(f"Output for phase {phase} did not validate against the schema. Re-running phase...")
                 return False
 
         return True
@@ -244,8 +232,7 @@ class MACGPi:
         logger.debug("Executing pre-execution validation checks")
 
         if (self.templateManager is None or self.agentManager is None):
-            logger.error(
-                "MACGPi was not initialized successfully, cannot run pipeline.")
+            logger.error("MACGPi was not initialized successfully, cannot run pipeline.")
             return False
 
         # Test whether all phases contain valid phase directories
@@ -260,12 +247,11 @@ class MACGPi:
         Writes the project description to the output directory. This is useful for providing the project description as
         a reference for the prompts and agents during execution.
         '''
-        logger.debug(
-            f"Writing project description to output directory at {self.output_dir}...")
+        logger.debug(f"Writing project description to output directory at {self.output_dir}...")
 
-        project_description_path: str = os.path.join(
-            self.output_dir, "docs", "project_description.md")
+        project_description_path: str = os.path.join(self.output_dir, "docs", "project_description.md")
         os.makedirs(os.path.dirname(project_description_path), exist_ok=True)
+
         with open(project_description_path, "w") as f:
             f.write(self.input_description)
 

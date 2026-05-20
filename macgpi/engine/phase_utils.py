@@ -31,8 +31,7 @@ def parse_phase_config(config_file: str | None) -> dict | None:
     }
     '''
     if config_file is None:
-        config_file = os.path.join(os.path.dirname(
-            __file__), "..", "configs", "macgpi_phases.json")
+        config_file = os.path.join(os.path.dirname(__file__), "..", "configs", "macgpi_phases.json")
 
     try:
         with open(config_file, "r") as f:
@@ -58,13 +57,12 @@ def is_phase_dir(path: str, schema_required: bool = True) -> bool:
 
     # Test if there is at least 1 template file.
     files: list[str] = os.listdir(path)
-    prompt_files: list[str] = [file for file in files if file.startswith(
-        "template") and file.endswith(".md")]
+    prompt_files: list[str] = [file for file in files if is_template_file(file)]
     is_phase_dir = is_phase_dir and len(prompt_files) > 0
 
     if schema_required:
-        is_phase_dir = is_phase_dir and os.path.isfile(
-            os.path.join(path, "schema.json"))
+        is_phase_dir = is_phase_dir and os.path.isfile(os.path.join(path, "schema.json"))
+
     return is_phase_dir
 
 
@@ -111,8 +109,7 @@ def get_next_phase(phase_config: dict, output_dir: str) -> str | None:
     if next_phase != "dynamic":
         return next_phase
 
-    logger.debug(
-        f"Next phase is dynamic. Attempting to read next phase from output directory at {output_dir}...")
+    logger.debug(f"Next phase is dynamic. Attempting to read next phase from output directory at {output_dir}...")
 
     output_path: str | None = phase_config.get("output_path", None)
     if output_path is None:
@@ -136,8 +133,7 @@ def get_phase_prompts(phase_path: str) -> list[str]:
     '''
     files: list[str] = os.listdir(phase_path)
 
-    prompt_files: list[str] = [file for file in files if file.startswith(
-        "template") and file.endswith(".md")]
+    prompt_files: list[str] = [file for file in files if is_template_file(file)]
     prompt_files.sort()
     return prompt_files
 
@@ -153,3 +149,11 @@ def validate_output_file(output_content: dict, schema: dict) -> bool:
     except jsonschema.ValidationError as e:
         logger.error(f"Output validation error: {e}")
         return False
+
+
+def is_template_file(file_name: str) -> bool:
+    '''
+    Tests whether the given file name is a valid template file name. A valid template file name starts with "template"
+    and ends with ".md".
+    '''
+    return file_name.startswith("template") and file_name.endswith(".md")

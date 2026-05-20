@@ -15,7 +15,7 @@ def vllm_health(host: str, port: int) -> bool:
     logger.debug(f"Testing vLLM endpoint ({url})...")
     try:
         resp = requests.get(url, timeout=2)
-        logger.debug(f"vLL response: {resp}")
+        logger.debug(f"vLLM response: {resp}")
         if 200 <= resp.status_code < 300:
             return True
     except Exception:

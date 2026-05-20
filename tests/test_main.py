@@ -1,3 +1,4 @@
+import json
 import os
 import pytest
 from macgpi.engine.main import MACGPi
@@ -118,67 +119,171 @@ class TestMacgpiMain:
         assert result is False
 
 
+# ---------------------------------------------------------------------------
+# Minimal JSON payloads that satisfy the real plan / evaluate schemas
+# ---------------------------------------------------------------------------
+_VALID_PLAN: dict = {
+    "objectives": [{"id": "OBJ-001", "description": "Build a script", "priority": "high"}],
+    "architecture": {"pattern": "script", "rationale": "Simplest structure"},
+    "components": [{"name": "main", "responsibility": "Entry point"}],
+    "dependencies": [],
+    "implementation_tasks": [
+        {"id": "TASK-001", "title": "Write script", "component": "main", "description": "Write it"}
+    ],
+    "quality_standards": {},
+}
+
+_VALID_EVAL_FINISH: dict = {
+    "overall_rating": "pass",
+    "summary": "Implementation meets all requirements.",
+    "compliance": [{"requirement_id": "OBJ-001", "status": "met"}],
+    "findings": [],
+    "recommendations": [],
+    "next": "finish",
+}
+
+
+def _write_json(path: str, content: dict) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(content, f)
+
+
+def _mock_agent(mocker, output_dir: str):
+    """Patch AgentManager with a mock whose run() writes required output files."""
+    mock_am = mocker.MagicMock()
+    mocker.patch("macgpi.engine.main.AgentManager", return_value=mock_am)
+
+    call_index = {"n": 0}
+
+    def agent_side_effect(prompt: str) -> None:
+        n = call_index["n"]
+        call_index["n"] += 1
+        if n == 0:  # plan phase
+            _write_json(
+                os.path.join(output_dir, "docs", "implementation_plan.json"),
+                _VALID_PLAN,
+            )
+        elif n == 3:  # evaluate phase (after 2 implement templates)
+            _write_json(
+                os.path.join(output_dir, "docs", "evaluation_report.json"),
+                _VALID_EVAL_FINISH,
+            )
+
+    mock_am.run.side_effect = agent_side_effect
+    return mock_am
+
+
 @pytest.mark.integration
+@pytest.mark.slow
 class TestMacgpiIntegration:
-    """Integration tests using real TemplateManager and phase directories."""
+    """
+    Integration tests using the real prompt files, TemplateManager, and phase config.
 
-    def test_macgpi_validates_phase_directories(
-        self, mocker, temp_prompts_dir, sample_phase_config, sample_output_dir
-    ):
-        """Test that macgpi validates phase directories."""
+    Only the network boundary (vllm_health, AgentManager) is mocked.
+    The pipeline exercises real Jinja2 template rendering and real JSON schema validation.
+    """
+
+    def test_full_pipeline_completes_successfully(self, mocker, tmp_path):
+        """Full pipeline returns True using real prompt files and real schema validation."""
+        output_dir = str(tmp_path)
         mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
+        _mock_agent(mocker, output_dir)
 
-        from macgpi.engine.template_manager import TemplateManager
-        actual_template_mgr = TemplateManager(prompt_dir=temp_prompts_dir)
-        mocker.patch("macgpi.engine.main.TemplateManager", return_value=actual_template_mgr)
-
-        mock_agent = mocker.MagicMock()
-        mocker.patch("macgpi.engine.main.AgentManager", return_value=mock_agent)
-
-        macgpi: MACGPi = MACGPi(
-            input_description="test",
+        result = MACGPi(
+            input_description="Build a hello world Python script.",
             model_name="test-model",
-            output_dir=sample_output_dir,
-            prompt_dir=temp_prompts_dir,
-            phases_config_file=sample_phase_config
-        )
-        result = macgpi.run()
+            output_dir=output_dir,
+        ).run()
 
         assert result is True
 
-    def test_macgpi_executes_phases_in_order(
-        self, mocker, temp_prompts_dir, sample_output_dir, sample_phase_config
-    ):
-        """Test that phases are executed in correct order."""
+    def test_agent_called_once_per_template(self, mocker, tmp_path):
+        """Agent is called once per template: plan(1) + implement(2) + evaluate(1) = 4."""
+        output_dir = str(tmp_path)
+        mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
+        mock_am = _mock_agent(mocker, output_dir)
+
+        MACGPi(
+            input_description="Build a hello world Python script.",
+            model_name="test-model",
+            output_dir=output_dir,
+        ).run()
+
+        assert mock_am.run.call_count == 4
+
+    def test_rendered_prompt_contains_input_description(self, mocker, tmp_path):
+        """Plan prompt rendered by the real TemplateManager contains the input description."""
+        output_dir = str(tmp_path)
+        mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
+        mock_am = _mock_agent(mocker, output_dir)
+
+        description = "Build a hello world Python script."
+        MACGPi(
+            input_description=description,
+            model_name="test-model",
+            output_dir=output_dir,
+        ).run()
+
+        plan_prompt: str = mock_am.run.call_args_list[0].args[0]
+        assert description in plan_prompt
+
+    def test_schema_validation_retries_phase_on_invalid_output(self, mocker, tmp_path):
+        """Invalid plan output causes the phase to retry; valid output on the second attempt continues."""
+        output_dir = str(tmp_path)
         mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
 
-        # Create actual template manager
-        from macgpi.engine.template_manager import TemplateManager
-        actual_template_mgr = TemplateManager(prompt_dir=temp_prompts_dir)
-        mocker.patch("macgpi.engine.main.TemplateManager", return_value=actual_template_mgr)
+        mock_am = mocker.MagicMock()
+        mocker.patch("macgpi.engine.main.AgentManager", return_value=mock_am)
 
-        mock_agent = mocker.MagicMock()
-        mocker.patch("macgpi.engine.main.AgentManager", return_value=mock_agent)
+        call_index = {"n": 0}
 
-        macgpi: MACGPi = MACGPi(
-            input_description="test",
+        def agent_side_effect(prompt: str) -> None:
+            n = call_index["n"]
+            call_index["n"] += 1
+            if n == 0:  # plan — first attempt: invalid JSON
+                _write_json(
+                    os.path.join(output_dir, "docs", "implementation_plan.json"),
+                    {"invalid": True},
+                )
+            elif n == 1:  # plan — retry: valid JSON
+                _write_json(
+                    os.path.join(output_dir, "docs", "implementation_plan.json"),
+                    _VALID_PLAN,
+                )
+            elif n == 4:  # evaluate (after retry + 2 implement templates)
+                _write_json(
+                    os.path.join(output_dir, "docs", "evaluation_report.json"),
+                    _VALID_EVAL_FINISH,
+                )
+
+        mock_am.run.side_effect = agent_side_effect
+
+        result = MACGPi(
+            input_description="Build a hello world Python script.",
             model_name="test-model",
-            output_dir=sample_output_dir,
-            prompt_dir=temp_prompts_dir,
-            phases_config_file=sample_phase_config
-        )
-        result = macgpi.run()
+            output_dir=output_dir,
+        ).run()
 
-        # Verify agent was called
         assert result is True
-        mock_agent.run.assert_called()
+        # plan×2 (retry) + implement×2 + evaluate×1 = 5 total agent calls
+        assert mock_am.run.call_count == 5
 
-        phase_visits = macgpi.get_phase_visits()
-        assert phase_visits["plan"] == 1
-        assert phase_visits["implement"] == 1
-        assert phase_visits["evaluate"] == 3
-        assert phase_visits["revise"] == 3
-        assert phase_visits["finally"] == 1
+    def test_output_files_written_by_pipeline(self, mocker, tmp_path):
+        """Expected output files exist after a successful run."""
+        output_dir = str(tmp_path)
+        mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
+        _mock_agent(mocker, output_dir)
+
+        MACGPi(
+            input_description="Build a hello world Python script.",
+            model_name="test-model",
+            output_dir=output_dir,
+        ).run()
+
+        assert os.path.exists(os.path.join(output_dir, "docs", "project_description.md"))
+        assert os.path.exists(os.path.join(output_dir, "docs", "implementation_plan.json"))
+        assert os.path.exists(os.path.join(output_dir, "docs", "evaluation_report.json"))
 
 
 @pytest.mark.unit

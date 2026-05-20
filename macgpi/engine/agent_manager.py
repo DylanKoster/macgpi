@@ -4,6 +4,7 @@ import yaml
 from minisweagent.agents.default import DefaultAgent
 from minisweagent.models import get_model
 from minisweagent.environments.local import LocalEnvironment
+from typing import cast
 
 
 class AgentManager:
@@ -30,9 +31,9 @@ class AgentManager:
         Parameters:
             prompt (str): The prompt to run the agent on.
         Returns:
-            str: The output of the agent.
+            dict: The output of the agent.
         '''
-        return self.agent.run(prompt)
+        return cast(dict, self.agent.run(prompt))
 
     def load_model_config(self, model_config_file: str | None, model_name: str, model_host: str,
                           model_port: int) -> None:

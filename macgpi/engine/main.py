@@ -50,7 +50,7 @@ class MACGPi:
         self.prompt_dir = prompt_dir
         self.phases_config_file = phases_config_file
 
-        self.phases_visits = {}
+        self.phases_visits: dict = {}
 
         # Instantiating managers
         try:
@@ -94,7 +94,7 @@ class MACGPi:
             # Write PRD to output dir
             self.write_input_to_output_dir()
 
-            phase: str = list(phases_config.keys())[0]
+            phase: str | None = list(phases_config.keys())[0]
             while not is_finished_phase(phase):
                 phase_config: dict = phases_config[phase]
 
@@ -197,7 +197,7 @@ class MACGPi:
 
         return True
 
-    def validate_output(self, output_path: str, schema_path: str, phase: str) -> bool:
+    def validate_output(self, output_path: str, schema_path: str, phase: str | None) -> bool:
         '''
         Validates the output of a phase against the specified schema. Returns True if the output is valid, and False
         if it is not.
@@ -222,7 +222,11 @@ class MACGPi:
         '''
         logger.debug("Parsing phase configuration...")
 
-        macgpi_config: dict = parse_phase_config(self.phases_config_file)
+        macgpi_config: dict | None = parse_phase_config(self.phases_config_file)
+        if macgpi_config is None:
+            logger.error("Failed to parse phase configuration, cannot run MACGPi.")
+            raise Exception("Failed to parse phase configuration.")
+
         phases_config: dict = macgpi_config["phases"]
         self.phase_visits: dict = {
             phase_name: 0 for phase_name in phases_config.keys()}

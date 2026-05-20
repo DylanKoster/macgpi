@@ -24,7 +24,7 @@ class AgentManager:
             **self.agent_config
         )
 
-    def run(self, prompt: str) -> str:
+    def run(self, prompt: str) -> dict:
         '''
         Run the agent on the given prompt and return the output.
 
@@ -35,12 +35,15 @@ class AgentManager:
         '''
         return self.agent.run(prompt)
 
-    def load_model_config(self, model_config_file: str, model_name: str, model_host: str, model_port: int):
+    def load_model_config(self, model_config_file: str | None, model_name: str, model_host: str, model_port: int):
         '''
         Load a model configuration from the given file and update the agent's model configuration accordingly.
 
         Parameters:
-            model_config_file (str): The path to the model configuration file.
+            model_config_file (str | None): The path to the model configuration file. If None, a default path is used.
+            model_name (str): The name of the model to use, which is added to the model configuration.
+            model_host (str): The host of the model API, which is added to the model configuration.
+            model_port (int): The port of the model API, which is added to the model configuration.
         '''
         model_config_extra: dict = {
             "model_name": model_name,
@@ -62,12 +65,12 @@ class AgentManager:
         model_config.update(model_config_extra)
         self.model_config = model_config
 
-    def load_agent_config(self, agent_config_file: str):
+    def load_agent_config(self, agent_config_file: str | None):
         '''
         Load an agent configuration from the given file and update the agent's configuration accordingly.
 
         Parameters:
-            agent_config_file (str): The path to the agent configuration file.
+            agent_config_file (str | None): The path to the agent configuration file. If None, a default path is used.
         '''
         if agent_config_file is None:
             agent_config_file = os.path.join(os.path.dirname(

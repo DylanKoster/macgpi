@@ -8,7 +8,7 @@ import jsonschema
 logger = logging.getLogger(__name__)
 
 
-def parse_phase_config(config_file: str | None) -> dict:
+def parse_phase_config(config_file: str | None) -> dict | None:
     '''
     Parses the given phase configuration file and returns a dictionary mapping phase names to their configurations.
     The configuration file is expected to be in JSON format, with the following structure:
@@ -89,7 +89,7 @@ def read_phase_inputs(inputs: dict, output_dir: str) -> dict:
     return input_contents
 
 
-def is_finished_phase(phase: str) -> bool:
+def is_finished_phase(phase: str | None) -> bool:
     '''
     Tests whether the given phase is the "finish" phase or None, which indicates that the pipeline has finished
     executing all phases.
@@ -119,7 +119,7 @@ def get_next_phase(phase_config: dict, output_dir: str) -> str | None:
         return None
 
     with open(os.path.join(output_dir, output_path), "r") as f:
-        output_content: str = json.load(f)
+        output_content: dict = json.load(f)
 
     logger.debug(
         f"Inferred phase: {output_content['next']} from output content at {output_path}: \n{json.dumps(output_content,

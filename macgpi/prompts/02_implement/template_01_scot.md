@@ -45,14 +45,8 @@ Use as many ReAct iterations as needed per unit until the unit reaches a clear c
 Use the following unit-level SCoT example as a reference for granularity and structure:
 
 ```text
-An SCoT for the following function declaration:
-
-def first_Repeated_Char(str):
-"""
-Write a python function to find the first repeated
-character in a given string.
-"""
-Pass
+Unit: first_Repeated_Char(str):
+Description: A python function to find the first repeated character in a given string.
 
 Input: str: a string
 Output: ch: a repeated character in str

@@ -112,9 +112,9 @@ class MACGPi:
 
                 self.phase_visits[phase] += 1
 
-                output_path: str | None = self.output_dir
-                if "output_path" in phase_config.keys():
-                    output_path = self.output_dir + "/" + phase_config["output_path"]
+                output_file = None
+                if "output_file" in phase_config.keys():
+                    output_file = self.output_dir + "/" + phase_config["output_file"]
 
                 inputs: dict = read_phase_inputs(
                     phase_config["inputs"], self.output_dir)
@@ -124,16 +124,16 @@ class MACGPi:
                 for prompt_file in prompts:
                     logger.info(f"Running prompt {prompt_file} for phase {phase}...")
                     template_output: str = self.templateManager.render(phase_config["path"], template_file=prompt_file,
-                                                                       output_path=output_path, **inputs)
+                                                                       output_file=output_file, **inputs)
                     self.agentManager.run(template_output)
 
                 # If the phase requires schema validation of the output, validate the output and re-run the phase if it
                 # fails
-                if phase_config.get("schema", False) and output_path is not None:
+                if phase_config.get("schema", False) and output_file is not None:
                     schema_path: str = os.path.join(self.templateManager.prompt_dir,
                                                     phase_config["path"], "schema.json")
 
-                    if not self.validate_output(output_path, schema_path, phase):
+                    if not self.validate_output(output_file, schema_path, phase):
                         self.phase_visits[phase] -= 1
                         continue
 

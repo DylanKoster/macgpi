@@ -36,7 +36,7 @@ class TestParsePhaseConfig:
         assert "output_file" in plan_phase
         assert "next" in plan_phase
 
-    def test_parse_config_with_none(self, temp_dir):
+    def test_parse_config_with_none(self):
         """Test parsing with None uses default config."""
         # This tests the default behavior when config_file is None
         # The function should look for macgpi/configs/macgpi_phases.json

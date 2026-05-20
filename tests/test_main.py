@@ -1,15 +1,13 @@
 import os
-from unittest.mock import patch, MagicMock
 from macgpi.engine.main import MACGPi
 
 
 class TestMacgpiMain:
     """Basic tests for macgpi function."""
 
-    @patch("macgpi.engine.main.vllm_health")
-    def test_macgpi_unhealthy_vllm_returns_early(self, mock_health, temp_dir):
+    def test_macgpi_unhealthy_vllm_returns_early(self, mocker, temp_dir):
         """Test that macgpi returns early if vLLM is unhealthy."""
-        mock_health.return_value = False
+        mock_health = mocker.patch("macgpi.engine.main.vllm_health", return_value=False)
 
         macgpi: MACGPi = MACGPi(
             input_description="test input",
@@ -21,26 +19,15 @@ class TestMacgpiMain:
         assert result is False
         mock_health.assert_called_once()
 
-    @patch("macgpi.engine.main.is_phase_dir")
-    @patch("macgpi.engine.main.AgentManager")
-    @patch("macgpi.engine.main.TemplateManager")
-    @patch("macgpi.engine.main.vllm_health")
-    def test_macgpi_creates_output_dir(
-        self,
-        mock_health,
-        mock_template_mgr,
-        mock_agent_mgr,
-        mock_is_phase_dir,
-        temp_dir
-    ):
+    def test_macgpi_creates_output_dir(self, mocker, temp_dir):
         """Test that macgpi creates output directory structure."""
-        mock_health.return_value = True
-        mock_is_phase_dir.return_value = True
+        mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
+        mocker.patch("macgpi.engine.main.is_phase_dir", return_value=True)
 
-        mock_tm = MagicMock()
+        mock_tm = mocker.MagicMock()
         mock_tm.prompt_dir = temp_dir
-        mock_template_mgr.return_value = mock_tm
-        mock_agent_mgr.return_value = MagicMock()
+        mocker.patch("macgpi.engine.main.TemplateManager", return_value=mock_tm)
+        mocker.patch("macgpi.engine.main.AgentManager", return_value=mocker.MagicMock())
 
         output_dir = os.path.join(temp_dir, "output")
 
@@ -58,26 +45,15 @@ class TestMacgpiMain:
         # Check that docs directory was created
         assert os.path.exists(os.path.join(output_dir, "docs"))
 
-    @patch("macgpi.engine.main.is_phase_dir")
-    @patch("macgpi.engine.main.AgentManager")
-    @patch("macgpi.engine.main.TemplateManager")
-    @patch("macgpi.engine.main.vllm_health")
-    def test_macgpi_writes_project_description(
-        self,
-        mock_health,
-        mock_template_mgr,
-        mock_agent_mgr,
-        mock_is_phase_dir,
-        temp_dir
-    ):
+    def test_macgpi_writes_project_description(self, mocker, temp_dir):
         """Test that project description is written to output."""
-        mock_health.return_value = True
-        mock_is_phase_dir.return_value = True
+        mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
+        mocker.patch("macgpi.engine.main.is_phase_dir", return_value=True)
 
-        mock_tm = MagicMock()
+        mock_tm = mocker.MagicMock()
         mock_tm.prompt_dir = temp_dir
-        mock_template_mgr.return_value = mock_tm
-        mock_agent_mgr.return_value = MagicMock()
+        mocker.patch("macgpi.engine.main.TemplateManager", return_value=mock_tm)
+        mocker.patch("macgpi.engine.main.AgentManager", return_value=mocker.MagicMock())
 
         output_dir = os.path.join(temp_dir, "output")
         test_input = "Build a web application"
@@ -100,63 +76,16 @@ class TestMacgpiMain:
             content = f.read()
         assert content == test_input
 
-    @patch("macgpi.engine.main.AgentManager")
-    @patch("macgpi.engine.main.TemplateManager")
-    @patch("macgpi.engine.main.vllm_health")
-    def test_macgpi_validates_phase_directories(
-        self,
-        mock_health,
-        mock_template_mgr,
-        mock_agent_mgr,
-        temp_prompts_dir,
-        sample_phase_config,
-        sample_output_dir
-    ):
-        """Test that macgpi validates phase directories."""
-        mock_health.return_value = True
-
-        # Create template manager with actual prompts
-        from macgpi.engine.template_manager import TemplateManager
-        actual_template_mgr = TemplateManager(prompt_dir=temp_prompts_dir)
-        mock_template_mgr.return_value = actual_template_mgr
-
-        mock_agent = MagicMock()
-        mock_agent_mgr.return_value = mock_agent
-
-        # Should complete validation successfully
-        macgpi: MACGPi = MACGPi(
-            input_description="test",
-            model_name="test-model",
-            output_dir=sample_output_dir,
-            prompt_dir=temp_prompts_dir,
-            phases_config_file=sample_phase_config
-        )
-        result = macgpi.run()
-
-        assert result is True
-
-    @patch("macgpi.engine.main.parse_phase_config")
-    @patch("macgpi.engine.main.AgentManager")
-    @patch("macgpi.engine.main.TemplateManager")
-    @patch("macgpi.engine.main.vllm_health")
     def test_macgpi_fails_on_invalid_phase_directories(
-        self,
-        mock_health,
-        mock_template_mgr,
-        mock_agent_mgr,
-        mock_parse_config,
-        temp_prompts_dir,
-        sample_output_dir,
+        self, mocker, temp_prompts_dir, sample_output_dir
     ):
         """Test that macgpi fails on invalid phase directories."""
-        mock_health.return_value = True
+        mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
 
-        # Create template manager with actual prompts
         from macgpi.engine.template_manager import TemplateManager
         actual_template_mgr = TemplateManager(prompt_dir=temp_prompts_dir)
-        mock_template_mgr.return_value = actual_template_mgr
-
-        mock_agent_mgr.return_value = MagicMock()
+        mocker.patch("macgpi.engine.main.TemplateManager", return_value=actual_template_mgr)
+        mocker.patch("macgpi.engine.main.AgentManager", return_value=mocker.MagicMock())
 
         # Create config with invalid phase
         config = {
@@ -172,7 +101,7 @@ class TestMacgpiMain:
                 }
             }
         }
-        mock_parse_config.return_value = config
+        mocker.patch("macgpi.engine.main.parse_phase_config", return_value=config)
 
         # Should return False due to invalid phase
         macgpi: MACGPi = MACGPi(
@@ -186,28 +115,47 @@ class TestMacgpiMain:
 
         assert result is False
 
-    @patch("macgpi.engine.main.AgentManager")
-    @patch("macgpi.engine.main.TemplateManager")
-    @patch("macgpi.engine.main.vllm_health")
+
+class TestMacgpiIntegration:
+    """Integration tests using real TemplateManager and phase directories."""
+
+    def test_macgpi_validates_phase_directories(
+        self, mocker, temp_prompts_dir, sample_phase_config, sample_output_dir
+    ):
+        """Test that macgpi validates phase directories."""
+        mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
+
+        from macgpi.engine.template_manager import TemplateManager
+        actual_template_mgr = TemplateManager(prompt_dir=temp_prompts_dir)
+        mocker.patch("macgpi.engine.main.TemplateManager", return_value=actual_template_mgr)
+
+        mock_agent = mocker.MagicMock()
+        mocker.patch("macgpi.engine.main.AgentManager", return_value=mock_agent)
+
+        macgpi: MACGPi = MACGPi(
+            input_description="test",
+            model_name="test-model",
+            output_dir=sample_output_dir,
+            prompt_dir=temp_prompts_dir,
+            phases_config_file=sample_phase_config
+        )
+        result = macgpi.run()
+
+        assert result is True
+
     def test_macgpi_executes_phases_in_order(
-        self,
-        mock_health,
-        mock_template_mgr,
-        mock_agent_mgr,
-        temp_prompts_dir,
-        sample_output_dir,
-        sample_phase_config
+        self, mocker, temp_prompts_dir, sample_output_dir, sample_phase_config
     ):
         """Test that phases are executed in correct order."""
-        mock_health.return_value = True
+        mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
 
         # Create actual template manager
         from macgpi.engine.template_manager import TemplateManager
         actual_template_mgr = TemplateManager(prompt_dir=temp_prompts_dir)
-        mock_template_mgr.return_value = actual_template_mgr
+        mocker.patch("macgpi.engine.main.TemplateManager", return_value=actual_template_mgr)
 
-        mock_agent = MagicMock()
-        mock_agent_mgr.return_value = mock_agent
+        mock_agent = mocker.MagicMock()
+        mocker.patch("macgpi.engine.main.AgentManager", return_value=mock_agent)
 
         macgpi: MACGPi = MACGPi(
             input_description="test",
@@ -233,12 +181,10 @@ class TestMacgpiMain:
 class TestMacgpiErrorHandling:
     """Tests for macgpi error handling."""
 
-    @patch("macgpi.engine.main.vllm_health")
-    def test_macgpi_handles_missing_config_gracefully(self, mock_health, temp_dir):
+    def test_macgpi_handles_missing_config_gracefully(self, mocker, temp_dir):
         """Test that macgpi handles missing config gracefully."""
-        mock_health.return_value = True
+        mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
 
-        # Should not raise exception, but return False
         macgpi: MACGPi = MACGPi(
             input_description="test",
             model_name="test-model",

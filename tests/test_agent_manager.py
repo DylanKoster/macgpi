@@ -1,20 +1,19 @@
 import os
 import pytest
 import yaml
-from unittest.mock import patch, MagicMock
 from macgpi.engine.agent_manager import AgentManager
 
 
 @pytest.fixture
-def mock_model() -> MagicMock:
+def mock_model(mocker):
     """Create a mock model object."""
-    return MagicMock()
+    return mocker.MagicMock()
 
 
 @pytest.fixture
-def mock_agent() -> MagicMock:
+def mock_agent(mocker):
     """Create a mock agent object."""
-    agent: MagicMock = MagicMock()
+    agent = mocker.MagicMock()
     agent.run.return_value = "Agent output"
     return agent
 
@@ -50,20 +49,17 @@ def sample_agent_config(temp_dir) -> str:
 class TestAgentManager:
     """Tests for AgentManager."""
 
-    @patch("macgpi.engine.agent_manager.DefaultAgent")
-    @patch("macgpi.engine.agent_manager.get_model")
     def test_init_with_model_and_agent_configs(
         self,
-        mock_get_model: MagicMock,
-        mock_agent_class: MagicMock,
+        mocker,
         sample_model_config: str,
         sample_agent_config: str,
-        mock_model: MagicMock,
-        mock_agent: MagicMock
+        mock_model,
+        mock_agent,
     ):
         """Test initialization with both model and agent configs."""
-        mock_get_model.return_value = mock_model
-        mock_agent_class.return_value = mock_agent
+        mocker.patch("macgpi.engine.agent_manager.get_model", return_value=mock_model)
+        mocker.patch("macgpi.engine.agent_manager.DefaultAgent", return_value=mock_agent)
 
         manager: AgentManager = AgentManager(
             "test-model",
@@ -79,18 +75,10 @@ class TestAgentManager:
         assert manager.agent_config is not None
         assert "system_template" in manager.agent_config.keys()
 
-    @patch("macgpi.engine.agent_manager.DefaultAgent")
-    @patch("macgpi.engine.agent_manager.get_model")
-    def test_init_with_custom_host_port(
-        self,
-        mock_get_model: MagicMock,
-        mock_agent_class: MagicMock,
-        mock_model: MagicMock,
-        mock_agent: MagicMock
-    ):
+    def test_init_with_custom_host_port(self, mocker, mock_model, mock_agent):
         """Test initialization with custom host and port."""
-        mock_get_model.return_value = mock_model
-        mock_agent_class.return_value = mock_agent
+        mocker.patch("macgpi.engine.agent_manager.get_model", return_value=mock_model)
+        mocker.patch("macgpi.engine.agent_manager.DefaultAgent", return_value=mock_agent)
 
         manager: AgentManager = AgentManager(
             "test-model",
@@ -103,18 +91,10 @@ class TestAgentManager:
         # Check that model config contains correct API base
         assert "example.com:9000" in manager.model_config["model_kwargs"]["api_base"]
 
-    @patch("macgpi.engine.agent_manager.DefaultAgent")
-    @patch("macgpi.engine.agent_manager.get_model")
-    def test_init_without_configs_uses_defaults(
-        self,
-        mock_get_model: MagicMock,
-        mock_agent_class: MagicMock,
-        mock_model: MagicMock,
-        mock_agent: MagicMock
-    ):
+    def test_init_without_configs_uses_defaults(self, mocker, mock_model, mock_agent):
         """Test initialization without configs uses default paths."""
-        mock_get_model.return_value = mock_model
-        mock_agent_class.return_value = mock_agent
+        mocker.patch("macgpi.engine.agent_manager.get_model", return_value=mock_model)
+        mocker.patch("macgpi.engine.agent_manager.DefaultAgent", return_value=mock_agent)
 
         manager: AgentManager = AgentManager(
             "test-model",
@@ -123,11 +103,9 @@ class TestAgentManager:
         )
 
         assert manager.agent == mock_agent
-        print(manager.model_config)
         assert manager.model_config is not None
         assert "observation_template" in manager.model_config.keys()
         assert "format_error_template" in manager.model_config.keys()
-
         assert manager.agent_config is not None
         assert "system_template" in manager.agent_config.keys()
         assert manager.agent_config["step_limit"] == 0
@@ -155,20 +133,12 @@ class TestAgentManager:
         # API base should be constructed with the right host and port
         assert "remote.server:9000" in manager.model_config["model_kwargs"]["api_base"]
 
-    @patch("macgpi.engine.agent_manager.DefaultAgent")
-    @patch("macgpi.engine.agent_manager.get_model")
-    def test_run_with_prompt(
-        self,
-        mock_get_model: MagicMock,
-        mock_agent_class: MagicMock,
-        mock_model: MagicMock,
-        mock_agent: MagicMock
-    ):
+    def test_run_with_prompt(self, mocker, mock_model, mock_agent):
         """Test running agent with a prompt."""
         expected_output: str = "Agent response"
         mock_agent.run.return_value = expected_output
-        mock_get_model.return_value = mock_model
-        mock_agent_class.return_value = mock_agent
+        mocker.patch("macgpi.engine.agent_manager.get_model", return_value=mock_model)
+        mocker.patch("macgpi.engine.agent_manager.DefaultAgent", return_value=mock_agent)
 
         manager: AgentManager = AgentManager(
             "test-model",
@@ -181,18 +151,10 @@ class TestAgentManager:
         assert result == expected_output
         mock_agent.run.assert_called_once_with("Test prompt")
 
-    @patch("macgpi.engine.agent_manager.DefaultAgent")
-    @patch("macgpi.engine.agent_manager.get_model")
-    def test_run_multiple_prompts(
-        self,
-        mock_get_model: MagicMock,
-        mock_agent_class: MagicMock,
-        mock_model: MagicMock,
-        mock_agent: MagicMock
-    ):
+    def test_run_multiple_prompts(self, mocker, mock_model, mock_agent):
         """Test running agent multiple times."""
-        mock_get_model.return_value = mock_model
-        mock_agent_class.return_value = mock_agent
+        mocker.patch("macgpi.engine.agent_manager.get_model", return_value=mock_model)
+        mocker.patch("macgpi.engine.agent_manager.DefaultAgent", return_value=mock_agent)
         mock_agent.run.side_effect = ["output1", "output2", "output3"]
 
         manager: AgentManager = AgentManager(

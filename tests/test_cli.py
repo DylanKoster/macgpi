@@ -17,7 +17,7 @@ class TestCliArgumentParsing:
         mock_init.assert_called_once()
         mock_run.assert_called_once()
         call_kwargs = mock_init.call_args.kwargs
-        assert call_kwargs["input"] == "test input"
+        assert call_kwargs["input_description"] == "test input"
         assert call_kwargs["model_name"] == "test-model"
         assert call_kwargs["output_dir"] == "/output/path"
 
@@ -28,9 +28,9 @@ class TestCliArgumentParsing:
         "--model-host", "custom.host",
         "--model-port", "9000",
         "--prompt-dir", "/custom/prompts",
-        "--model-config", "model.yaml",
-        "--agent-config", "agent.yaml",
-        "--phases-config", "phases.json"
+        "--model-config-file", "model.yaml",
+        "--agent-config-file", "agent.yaml",
+        "--phases-config-file", "phases.json"
 
     ])
     def test_cli_with_kwargs(self, mock_run, mock_init):
@@ -45,9 +45,9 @@ class TestCliArgumentParsing:
         assert call_kwargs["model_host"] == "custom.host"
         assert call_kwargs["model_port"] == 9000
         assert call_kwargs["prompt_dir"] == "/custom/prompts"
-        assert call_kwargs["model_config"] == "model.yaml"
-        assert call_kwargs["agent_config"] == "agent.yaml"
-        assert call_kwargs["phases_config"] == "phases.json"
+        assert call_kwargs["model_config_file"] == "model.yaml"
+        assert call_kwargs["agent_config_file"] == "agent.yaml"
+        assert call_kwargs["phases_config_file"] == "phases.json"
 
     @patch("macgpi.engine.main.MACGPi.__init__", return_value=None)
     @patch("sys.argv", [
@@ -77,8 +77,9 @@ class TestCliArgumentParsing:
         assert call_kwargs["model_host"] == "localhost"
         assert call_kwargs["model_port"] == 8000
         assert call_kwargs["prompt_dir"] is None
-        assert call_kwargs["model_config"] is None
-        assert call_kwargs["agent_config"] is None
+        assert call_kwargs["model_config_file"] is None
+        assert call_kwargs["agent_config_file"] is None
+        assert call_kwargs["phases_config_file"] is None
 
     @patch("macgpi.engine.main.MACGPi.__init__", return_value=None)
     @patch("sys.argv", [

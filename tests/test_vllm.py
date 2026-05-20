@@ -2,6 +2,7 @@ import pytest
 from macgpi.engine.vllm import vllm_health
 
 
+@pytest.mark.unit
 class TestVllmHealth:
     """Tests for vllm_health function."""
 

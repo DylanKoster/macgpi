@@ -1,7 +1,9 @@
 import os
+import pytest
 from macgpi.engine.main import MACGPi
 
 
+@pytest.mark.unit
 class TestMacgpiMain:
     """Basic tests for macgpi function."""
 
@@ -116,6 +118,7 @@ class TestMacgpiMain:
         assert result is False
 
 
+@pytest.mark.integration
 class TestMacgpiIntegration:
     """Integration tests using real TemplateManager and phase directories."""
 
@@ -178,6 +181,7 @@ class TestMacgpiIntegration:
         assert phase_visits["finally"] == 1
 
 
+@pytest.mark.unit
 class TestMacgpiErrorHandling:
     """Tests for macgpi error handling."""
 

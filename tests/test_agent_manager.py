@@ -46,6 +46,7 @@ def sample_agent_config(temp_dir) -> str:
     return config_file
 
 
+@pytest.mark.unit
 class TestAgentManager:
     """Tests for AgentManager."""
 

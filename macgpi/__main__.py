@@ -31,19 +31,19 @@ def cli():
              + " to a 'prompts' directory located in the parent directory of this module.",
     )
     parser.add_argument(
-        "--model-config",
+        "--model-config-file",
         default=None,
         help="Configuration file for the model. If not provided, the default mini-swe-agent configuration will be "
              + "used.",
     )
     parser.add_argument(
-        "--agent-config",
+        "--agent-config-file",
         default=None,
         help="Configuration file for the agent. If not provided, the default mini-swe-agent configuration will be "
         + "used.",
     )
     parser.add_argument(
-        "--phases-config",
+        "--phases-config-file",
         default=None,
         help="Configuration file for the phases. If not provided, the default MACGPi configuration will be used.",
     )

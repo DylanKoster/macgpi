@@ -35,7 +35,8 @@ class AgentManager:
         '''
         return self.agent.run(prompt)
 
-    def load_model_config(self, model_config_file: str | None, model_name: str, model_host: str, model_port: int):
+    def load_model_config(self, model_config_file: str | None, model_name: str, model_host: str,
+                          model_port: int) -> None:
         '''
         Load a model configuration from the given file and update the agent's model configuration accordingly.
 
@@ -65,7 +66,7 @@ class AgentManager:
         model_config.update(model_config_extra)
         self.model_config = model_config
 
-    def load_agent_config(self, agent_config_file: str | None):
+    def load_agent_config(self, agent_config_file: str | None) -> None:
         '''
         Load an agent configuration from the given file and update the agent's configuration accordingly.
 

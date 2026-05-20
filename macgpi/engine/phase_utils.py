@@ -125,7 +125,7 @@ def get_next_phase(phase_config: dict, output_dir: str) -> str | None:
         f"Inferred phase: {output_content['next']} from output content at {output_path}: \n{json.dumps(output_content,
                                                                                                        indent=4)}")
 
-    return output_content["next"]
+    return str(output_content["next"])
 
 
 def get_phase_prompts(phase_path: str) -> list[str]:

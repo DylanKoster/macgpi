@@ -76,7 +76,7 @@ MACGPi is customizable. You can swap the system prompts for your own prompts usi
 
 Assigning the `--prompt-dir` to a different prompt directory redirects MACGPis engine to use the custom prompts. Each phase should have a subdirectory with a prompt and schema, as defined in the phase config. The inputs for the prompts can only be altered by updating the [MACGPi pipeline configuration](#pipeline-configuration). 
 
-The default inputs can be seen in the table below. All phases are provided a `output_dir` argument, containing the generated artifact root. The prompts can use this argument or ignore it. All phases that make use of an output schema have the `schema_format` and `output_path` inputs. The schema is always taken from the phase directory, adn the output path is defined per phase in the MACGPi pipeline configuration. The rest of the inputs change per phase.   
+The default inputs can be seen in the table below. All phases are provided a `output_dir` argument, containing the generated artifact root. The prompts can use this argument or ignore it. All phases that make use of an output schema have the `schema_format` and `output_file` inputs. The schema is always taken from the phase directory, and the output file is defined per phase in the MACGPi pipeline configuration. The rest of the inputs change per phase.   
 
 | Phase | Inputs |
 | ----- | ------ |
@@ -100,7 +100,7 @@ The `phases` object contains the definitions of all MACGPi phases. The first pha
 - `inputs`: A list of files (relative to the artifact root) which are the inputs to the prompt. The name used as the key is the name with which it will be accessible in the prompt. E.g. `"system_prd": "path/to/prd"` (see `phase_1` in the example configuration) means that the contents of the file located at `path/to/prd` will be accessible in the prompt using `{{ system_prd }}`.
 - `path`: The path (relative to the prompt directory) of the phase prompt(s) and, optionally, the schema file. Note that phases can contain multiple prompts (see [ MultiPrompt Phases](#multiprompt-phases)).
 - `schema`: Whether or not the output must adhere to a schema. This schema is expected to be readable in a `schema.json` file located in `path`. 
-- `output_path`: The path (relative to the artifact root), to which the output will be written.
+- `output_file`: The path (relative to the artifact root), to which the output file will be written.
 - `next`: The name of the phase which should be visited after this phase is completed. If empty or `finish`, MACGPi will terminate. A special `dynamic` value is reserved for LLM-decided phase flow. With this option, the LLM output will decide the next phase. If `dynamic` is used, the output schema MUST contain a `next` value, with the name of the next phase (or `finish` for termination), decided by the LLM. This means that `dynamic` can ONLY be used when the phase makes use of a schema.
 - `max_visits`: The maximum amount of times a phase is allowed to be visited. If this limit is exceeded, the pipeline stops. If not provided, a maximum of 1 is inferred.
 - `max_visits_exceeded_next`: The phase that will be entered in the `max_visits` is exceeded. This should only happen if `next` is dynamic, or `next` is the current phase.
@@ -116,7 +116,7 @@ An example configuration can be seen below.
             },
             "schema": true,
             "path": "phase_1/",
-            "output_path": "path/to/phase1_output",
+            "output_file": "path/to/phase1_output",
             "next": "phase_2"
         },
         "phase_2": {

@@ -3,6 +3,7 @@ from jinja2 import UndefinedError
 from macgpi.engine.template_manager import TemplateManager
 
 
+@pytest.mark.unit
 class TestTemplateManagerInit:
     """Tests for TemplateManager initialization."""
 
@@ -30,6 +31,7 @@ class TestTemplateManagerInit:
         assert manager.env.loader.searchpath == [temp_prompts_dir]
 
 
+@pytest.mark.unit
 class TestTemplateManagerRender:
     """Tests for TemplateManager.render method."""
 

@@ -21,8 +21,7 @@ class TemplateManager:
     def __init__(self, prompt_dir: str | None = None):
         # Resolve prompts directory relative to this module if not provided
         if prompt_dir is None:
-            prompt_dir = os.path.normpath(os.path.join(
-                os.path.dirname(__file__), "..", "prompts"))
+            prompt_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "prompts"))
 
         self.prompt_dir = prompt_dir
 
@@ -33,7 +32,7 @@ class TemplateManager:
             lstrip_blocks=True,
         )
 
-    def render(self, phase_dir: str, template_file: str, **kwargs) -> str:
+    def render(self, phase_dir: str, template_file: str, **kwargs: object) -> str:
         '''
         Render the template for the given phase with the provided keyword arguments.
         The template is searched in the prompts directory under a subdirectory named after the phase,
@@ -55,7 +54,8 @@ class TemplateManager:
                 schema_format = f.read()
 
         logger.debug(
-            f"Rendering template for phase {phase_dir} at path {template_path} {f"with schema at path {schema_path}" if schema_format is not None else ""}")
+            f"Rendering template for phase {phase_dir} at path {template_path} "
+            + (f"with schema at path {schema_path}" if schema_format is not None else ""))
 
         template: Template = self.env.get_template(template_path)
 
@@ -64,5 +64,5 @@ class TemplateManager:
 
         render: str = template.render(**kwargs)
 
-        logger.debug(f"Done rendering template!")
+        logger.debug("Done rendering template!")
         return render

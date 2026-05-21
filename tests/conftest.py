@@ -1,14 +1,12 @@
 import os
 import json
-import tempfile
 import pytest
 
 
 @pytest.fixture
-def temp_dir():
+def temp_dir(tmp_path):
     """Create a temporary directory for test files."""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        yield tmpdir
+    yield str(tmp_path)
 
 
 @pytest.fixture

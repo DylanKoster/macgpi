@@ -12,6 +12,7 @@ from macgpi.engine.phase_utils import (
 )
 
 
+@pytest.mark.unit
 class TestParsePhaseConfig:
     """Tests for parse_phase_config function."""
 
@@ -36,7 +37,7 @@ class TestParsePhaseConfig:
         assert "output_file" in plan_phase
         assert "next" in plan_phase
 
-    def test_parse_config_with_none(self, temp_dir):
+    def test_parse_config_with_none(self):
         """Test parsing with None uses default config."""
         # This tests the default behavior when config_file is None
         # The function should look for macgpi/configs/macgpi_phases.json
@@ -49,6 +50,7 @@ class TestParsePhaseConfig:
         assert "revise" in config["phases"]
 
 
+@pytest.mark.unit
 class TestIsPhaseDdir:
     """Tests for is_phase_dir function."""
 
@@ -88,6 +90,7 @@ class TestIsPhaseDdir:
         assert not is_phase_dir(nonexistent)
 
 
+@pytest.mark.unit
 class TestReadPhaseInputs:
     """Tests for read_phase_inputs function."""
 
@@ -122,6 +125,7 @@ class TestReadPhaseInputs:
             read_phase_inputs(inputs, sample_output_dir)
 
 
+@pytest.mark.unit
 class TestIsFinishedPhase:
     """Tests for is_finished_phase function."""
 
@@ -144,6 +148,7 @@ class TestIsFinishedPhase:
         assert not is_finished_phase("")
 
 
+@pytest.mark.unit
 class TestGetNextPhase:
     """Tests for get_next_phase function."""
 
@@ -188,6 +193,7 @@ class TestGetNextPhase:
         assert result is None
 
 
+@pytest.mark.unit
 class TestGetPhasePrompts:
     """Tests for get_phase_prompts function."""
 

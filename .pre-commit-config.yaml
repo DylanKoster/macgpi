@@ -8,3 +8,13 @@ repos:
         language: python
         types: [python]
         args: ['--config=.flake8']
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: python
+        types: [python]
+        args: ["--package", "macgpi"]
+        pass_filenames: false
+        additional_dependencies: [mypy==2.1.0]

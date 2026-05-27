@@ -392,3 +392,48 @@ class TestMacgpiConfigValidation:
         )
 
         assert macgpi.validate_macgpi_config(config) is False
+
+    def test_next_must_exist(self, temp_dir):
+        """next must refer to an existing phase or a valid terminal value."""
+        config = {
+            "entry": "plan",
+            "phases": {
+                "plan": {
+                    "schema": False,
+                    "path": "01_plan/",
+                    "next": "non-existent",
+                    "max_visits": 3,
+                }
+            }
+        }
+
+        macgpi = MACGPi(
+            input_description="test",
+            model_name="test-model",
+            output_dir=temp_dir,
+        )
+
+        assert macgpi.validate_macgpi_config(config) is False
+
+    def test_max_visits_exceeded_next_must_exist(self, temp_dir):
+        """max_visits_exceeded_next must refer to an existing phase or a valid terminal value."""
+        config = {
+            "entry": "plan",
+            "phases": {
+                "plan": {
+                    "schema": False,
+                    "path": "01_plan/",
+                    "next": "finish",
+                    "max_visits": 3,
+                    "max_visits_exceeded_next": "non-existent"
+                }
+            }
+        }
+
+        macgpi = MACGPi(
+            input_description="test",
+            model_name="test-model",
+            output_dir=temp_dir,
+        )
+
+        assert macgpi.validate_macgpi_config(config) is False

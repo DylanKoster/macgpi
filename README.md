@@ -93,9 +93,11 @@ Fully customizing the MACGPi pipeline is possibly by editing the phase config (d
 
 ### Configuration format
 
-The configuration is a JSON format, containing a single top-level objects, `phases`.
+The configuration is a JSON format, containing the single top-level objects, `entry`, and `phases`.
 
-The `phases` object contains the definitions of all MACGPi phases. The first phase in this object is the entry point for the pipeline. After that the definitions decide the flow of the pipeline. Each phase object defines its inputs, outputs, subsequent phase, prompt location, etc. A full list of object properties is shown below.
+The `entry` property contains a string containing the entry point of the application. This should be equal to a phase configured in the `phases` object. If not present, the first phase in the `phases` list is used as the entry point.
+
+The `phases` object is required and contains the definitions of all MACGPi phases. The first phase in this object is the entry point for the pipeline. After that the definitions decide the flow of the pipeline. Each phase object defines its inputs, outputs, subsequent phase, prompt location, etc. A full list of object properties is shown below.
 
 - `inputs`: A list of files (relative to the artifact root) which are the inputs to the prompt. The name used as the key is the name with which it will be accessible in the prompt. E.g. `"system_prd": "path/to/prd"` (see `phase_1` in the example configuration) means that the contents of the file located at `path/to/prd` will be accessible in the prompt using `{{ system_prd }}`.
 - `path`: The path (relative to the prompt directory) of the phase prompt(s) and, optionally, the schema file. Note that phases can contain multiple prompts (see [MultiPrompt Phases](#multiprompt-phases)).
@@ -109,6 +111,7 @@ An example configuration can be seen below.
 
 ```json
 {
+    "entry": "phase_1",
     "phases": {
         "phase_1": {
             "inputs": {

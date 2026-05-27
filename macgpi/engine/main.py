@@ -70,18 +70,18 @@ class MACGPi:
         '''
         try:
             # -------------------------------------
-            # vLLM host connection health check
-            # -------------------------------------
-            if not self.test_vllm_connection():
-                return False
-
-            # -------------------------------------
             # Phase configuration parsing
             # -------------------------------------
             macgpi_config = self.load_phases_config()
             phases_config = macgpi_config["phases"]
             if not self.validate_macgpi_config(macgpi_config):
                 logger.error("Phase configuration is not valid, cannot run MACGPi.")
+                return False
+
+            # -------------------------------------
+            # vLLM host connection health check
+            # -------------------------------------
+            if not self.test_vllm_connection():
                 return False
 
             # -------------------------------------

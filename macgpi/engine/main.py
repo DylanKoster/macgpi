@@ -3,6 +3,8 @@ import logging
 import os
 import traceback
 
+import jsonschema
+
 from macgpi.engine.agent_manager import AgentManager
 from macgpi.engine.vllm import vllm_health
 from macgpi.engine.template_manager import TemplateManager
@@ -78,6 +80,9 @@ class MACGPi:
             # -------------------------------------
             macgpi_config = self.load_phases_config()
             phases_config = macgpi_config["phases"]
+            if not self.validate_macgpi_config(macgpi_config):
+                logger.error("Phase configuration is not valid, cannot run MACGPi.")
+                return False
 
             # -------------------------------------
             # Pre-execution validation check
@@ -96,9 +101,6 @@ class MACGPi:
             phase: str | None = list(phases_config.keys())[0]
             if "entry" in macgpi_config.keys():
                 phase = macgpi_config["entry"]
-                if phase not in phases_config.keys():
-                    logger.error(f"Specified entry phase \"{phase}\" not present in phase configuration!")
-                    return False
 
             while not is_finished_phase(phase):
                 phase_config: dict = phases_config[phase]
@@ -206,6 +208,30 @@ class MACGPi:
             # Output not correct according to schema, re-run phase
             if not valid:
                 logger.warning(f"Output for phase {phase} did not validate against the schema. Re-running phase...")
+                return False
+
+        return True
+
+    def validate_macgpi_config(self, macgpi_config: dict) -> bool:
+        '''
+        Validates the overall phase configuration for the pipeline. This includes checking that the entry phase is valid
+        and present in the phases configuration, and that all phases contain valid phase directories. Returns True if
+        the configuration is valid, and False otherwise.
+        '''
+        schema_path: str = os.path.join(os.path.dirname(__file__), "..", "configs", "macgpi_config.schema.json")
+        with open(schema_path, "r") as f:
+            schema: dict = json.load(f)
+
+        try:
+            jsonschema.validate(instance=macgpi_config, schema=schema)
+        except (jsonschema.ValidationError, jsonschema.SchemaError) as e:
+            logger.info(f"Phase configuration validation error: {e}")
+            return False
+
+        if "entry" in macgpi_config.keys():
+            entry_phase: str = macgpi_config["entry"]
+            if entry_phase not in macgpi_config["phases"].keys():
+                logger.error(f"Specified entry phase \"{entry_phase}\" not present in phase configuration!")
                 return False
 
         return True

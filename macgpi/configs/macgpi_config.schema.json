@@ -1,0 +1,84 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "MACGPi configuration schema",
+    "description": "Schema for the configuration file of the MACGPi framework",
+    "type": "object",
+    "required": [
+        "phases"
+    ],
+    "properties": {
+        "entry": {
+            "type": "string",
+            "description": "The entry point phase for the MACGPi execution"
+        },
+        "phases": {
+            "type": "object",
+            "description": "Configuration for each phase in the MACGPi pipeline",
+            "additionalProperties": {
+                "type": "object",
+                "required": [
+                    "path",
+                    "next"
+                ],
+                "properties": {
+                    "inputs": {
+                        "type": "object",
+                        "description": "The input files for this phase, specified as key-value pairs where the key is the input name and the value is the file path relative to the output directory",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "schema": {
+                        "type": "boolean",
+                        "description": "Whether an output schema is present."
+                    },
+                    "path": {
+                        "type": "string",
+                        "description": "The directory path where the phase's prompts and output schema are located"
+                    },
+                    "next": {
+                        "type": "string",
+                        "description": "The next phase to execute after the current ends. Use 'dynamic' for dynamic phase transitions based on the LLMs decision."
+                    },
+                    "output_file": {
+                        "type": "string",
+                        "description": "The file path for the phase's output, relative to the phase's path. Required if 'schema' is true."
+                    },
+                    "max_visits": {
+                        "type": "integer",
+                        "description": "The maximum amount of times this phase is allowed to be visited. If this limit is exceeded, the pipeline continues to 'max_visits_exceeded_next'. If not specified, a maximum of 1 is enforced.",
+                        "minimum": 1
+                    },
+                    "max_visits_exceeded_next": {
+                        "type": "string",
+                        "description": "The next phase to execute if the 'max_visits' limit is exceeded. Required if 'max_visits' is specified. Cannot be dynamic.",
+                        "not": {
+                            "const": "dynamic"
+                        }
+                    }
+                },
+                "allOf": [
+                    {
+                        "if": {
+                            "properties": {
+                                "schema": {
+                                    "const": true
+                                }
+                            },
+                            "required": [
+                                "schema"
+                            ]
+                        },
+                        "then": {
+                            "required": [
+                                "output_file"
+                            ]
+                        }
+                    }
+                ],
+                "additionalProperties": false
+            }
+        }
+    },
+    "additionalProperties": false
+}

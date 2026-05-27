@@ -118,6 +118,46 @@ class TestMacgpiMain:
 
         assert result is False
 
+    def test_macgpi_fails_on_invalid_entry_phase(
+        self, mocker, temp_prompts_dir, sample_output_dir
+    ):
+        """Test that macgpi fails on invalid entry phase."""
+        mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
+
+        from macgpi.engine.template_manager import TemplateManager
+        actual_template_mgr = TemplateManager(prompt_dir=temp_prompts_dir)
+        mocker.patch("macgpi.engine.main.TemplateManager", return_value=actual_template_mgr)
+        mocker.patch("macgpi.engine.main.AgentManager", return_value=mocker.MagicMock())
+
+        # Create config with invalid entry
+        config = {
+            "entry": "non_existent",
+            "phases": {
+                "phase_1": {
+                    "inputs": {
+                        "system_prd": "docs/project_description.md"
+                    },
+                    "schema": False,
+                    "path": "01_plan/",
+                    "output_path": "docs/plan.json",
+                    "next": "implement"
+                }
+            }
+        }
+        mocker.patch("macgpi.engine.main.parse_phase_config", return_value=config)
+
+        # Should return False due to invalid entry
+        macgpi: MACGPi = MACGPi(
+            input_description="test",
+            model_name="test-model",
+            output_dir=sample_output_dir,
+            prompt_dir=temp_prompts_dir,
+            phases_config_file=None
+        )
+        result = macgpi.run()
+
+        assert result is False
+
 
 # ---------------------------------------------------------------------------
 # Minimal JSON payloads that satisfy the real plan / evaluate schemas

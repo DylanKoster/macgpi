@@ -76,7 +76,8 @@ class MACGPi:
             # -------------------------------------
             # Phase configuration parsing
             # -------------------------------------
-            phases_config = self.load_phases_config()
+            macgpi_config = self.load_phases_config()
+            phases_config = macgpi_config["phases"]
 
             # -------------------------------------
             # Pre-execution validation check
@@ -93,6 +94,12 @@ class MACGPi:
             self.write_input_to_output_dir()
 
             phase: str | None = list(phases_config.keys())[0]
+            if "entry" in macgpi_config.keys():
+                phase = macgpi_config["entry"]
+                if phase not in phases_config.keys():
+                    logger.error(f"Specified entry phase \"{phase}\" not present in phase configuration!")
+                    return False
+
             while not is_finished_phase(phase):
                 phase_config: dict = phases_config[phase]
 
@@ -216,12 +223,11 @@ class MACGPi:
             raise Exception("Failed to parse phase configuration.")
 
         phases_config: dict = macgpi_config["phases"]
-        self.phase_visits: dict = {
-            phase_name: 0 for phase_name in phases_config.keys()}
+        self.phase_visits: dict = {phase_name: 0 for phase_name in phases_config.keys()}
 
         logger.debug("Phase configuration parsed successfully.")
 
-        return phases_config
+        return macgpi_config
 
     def pre_execution_validation(self, phases_config: dict) -> bool:
         '''

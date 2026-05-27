@@ -1,4 +1,5 @@
 {
+    "entry": "plan",
     "phases": {
         "plan": {
             "inputs": {

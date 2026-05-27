@@ -51,7 +51,7 @@
                     },
                     "max_visits_exceeded_next": {
                         "type": "string",
-                        "description": "The next phase to execute if the 'max_visits' limit is exceeded. Required if 'max_visits' is specified. Cannot be dynamic.",
+                        "description": "The next phase to execute if the 'max_visits' limit is exceeded. If not present the pipeline will finish. Cannot be dynamic.",
                         "not": {
                             "const": "dynamic"
                         }

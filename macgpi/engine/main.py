@@ -225,7 +225,7 @@ class MACGPi:
         try:
             jsonschema.validate(instance=macgpi_config, schema=schema)
         except (jsonschema.ValidationError, jsonschema.SchemaError) as e:
-            logger.info(f"Phase configuration validation error: {e}")
+            logger.error(f"Phase configuration validation error: {e}")
             return False
 
         phases = list(macgpi_config["phases"].keys())

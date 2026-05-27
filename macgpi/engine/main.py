@@ -228,10 +228,26 @@ class MACGPi:
             logger.info(f"Phase configuration validation error: {e}")
             return False
 
+        phases = list(macgpi_config["phases"].keys())
+
+        # Test if the entry phase specified in the configuration is present in the phases configuration.
         if "entry" in macgpi_config.keys():
             entry_phase: str = macgpi_config["entry"]
-            if entry_phase not in macgpi_config["phases"].keys():
+            if entry_phase not in phases:
                 logger.error(f"Specified entry phase \"{entry_phase}\" not present in phase configuration!")
+                return False
+
+        # Test if all phases contain valid next phases
+        for phase_name, phase_config in macgpi_config["phases"].items():
+            next_phase: str | None = phase_config.get("next", None)
+            if next_phase is None or next_phase not in [*phases, "finish", "dynamic"]:
+                logger.error(f"Phase {phase_name} contains invalid next phase \"{next_phase}\"!")
+                return False
+
+            max_visits_exceeded_next: str | None = phase_config.get("max_visits_exceeded_next", None)
+            if max_visits_exceeded_next is not None and max_visits_exceeded_next not in [*phases, "finish"]:
+                logger.error(f"Phase {phase_name} contains invalid max_visits_exceeded_next phase "
+                             + f"\"{max_visits_exceeded_next}\"!")
                 return False
 
         return True

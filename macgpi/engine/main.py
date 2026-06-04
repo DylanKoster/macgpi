@@ -147,12 +147,6 @@ class MACGPi:
                 # If the phase requires schema validation of the output, validate the output and re-run the phase if it
                 # fails
                 if phase_config.get("schema", False) and output_file is not None:
-                    if (not os.path.exists(output_file)):
-                        logger.warning(
-                            f"Output file {output_file} for phase {phase} not found. Re-running phase...")
-                        self.phase_visits[phase] -= 1
-                        continue
-
                     schema_path: str = os.path.join(self.templateManager.prompt_dir,
                                                     phase_config["path"], "schema.json")
 
@@ -223,15 +217,19 @@ class MACGPi:
         Validates the output of a phase against the specified schema. Returns True if the output is valid, and False
         if it is not.
         '''
-        with open(schema_path, "r") as schema_file, open(output_path, "r") as output_file:
-            schema_dict: dict = json.load(schema_file)
-            output_dict: dict = json.load(output_file)
-            valid: bool = validate_output_file(output_dict, schema_dict)
+        try:
+            with open(schema_path, "r") as schema_file, open(output_path, "r") as output_file:
+                schema_dict: dict = json.load(schema_file)
+                output_dict: dict = json.load(output_file)
+                valid: bool = validate_output_file(output_dict, schema_dict)
 
-            # Output not correct according to schema, re-run phase
-            if not valid:
-                return False
-
+                # Output not correct according to schema, re-run phase
+                if not valid:
+                    return False
+        except Exception:
+            # Output does not exist or is invalid JSON. Re-run phase.
+            return False
+    
         return True
 
     def validate_macgpi_config(self, macgpi_config: dict) -> bool:

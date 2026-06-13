@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import subprocess
 import traceback
 
 import jsonschema
@@ -107,9 +108,10 @@ class MACGPi:
 
             while not is_finished_phase(phase):
                 if not self.test_vllm_connection():
-                    logger.error("Lost connection to vLLM server, aborting execution.")
+                    logger.error(
+                        "Lost connection to vLLM server, aborting execution.")
                     return False
-                
+
                 phase_config: dict = phases_config[phase]
 
                 # Test whether max_visits has been exceeded for this phase, and if so, move to the
@@ -127,7 +129,7 @@ class MACGPi:
 
                 self.phase_visits[phase] += 1
 
-                output_file = None
+                output_file: str | None = None
                 if "output_file" in phase_config.keys():
                     output_file = os.path.join(
                         self.output_dir, phase_config["output_file"])
@@ -146,11 +148,7 @@ class MACGPi:
 
                 # If the phase requires schema validation of the output, validate the output and re-run the phase if it
                 # fails
-                if phase_config.get("schema", False) and output_file is not None:
-                    schema_path: str = os.path.join(self.templateManager.prompt_dir,
-                                                    phase_config["path"], "schema.json")
-
-                    if not self.validate_output(output_file, schema_path, phase):
+                if not self.validate_output(phase_config, output_file, self.output_dir, phase):
                         logger.warning(
                             f"Output for phase {phase} did not validate against the schema. Re-running phase...")
                         self.phase_visits[phase] -= 1
@@ -212,10 +210,10 @@ class MACGPi:
 
         return True
 
-    def validate_output(self, output_path: str, schema_path: str, phase: str | None) -> bool:
+    def validate_schema_output(self, output_path: str, schema_path: str, phase: str | None) -> bool:
         '''
-        Validates the output of a phase against the specified schema. Returns True if the output is valid, and False
-        if it is not.
+        Validates the intermediate output file of a phase against the specified schema. Returns True if the output
+        follows the schema, and False if it is not.
         '''
         try:
             with open(schema_path, "r") as schema_file, open(output_path, "r") as output_file:
@@ -229,8 +227,26 @@ class MACGPi:
         except Exception:
             # Output does not exist or is invalid JSON. Re-run phase.
             return False
-    
+
         return True
+
+    def validate_output(self, phase_config: dict, output_file: str | None, output_dir: str, phase: str) -> bool:
+        '''
+        Validates the output of a phase. If the phase requires schema validation, validates the output file against the
+        specified schema and returns True if the output follows the schema, and False if it does not. If the phase is an
+        implementation phase test if the resulting implemenation compiles correctly.
+        '''
+        if phase_config.get("schema", False):
+            if output_file is None:
+                return False
+
+            schema_path: str = os.path.join(self.templateManager.prompt_dir, phase_config["path"], "schema.json")
+
+            return self.validate_schema_output(output_file, schema_path, phase)
+        
+        process: subprocess.CompletedProcess = subprocess.run(["python", "-m", "compileall", output_dir])
+        return process.returncode == 0
+
 
     def validate_macgpi_config(self, macgpi_config: dict) -> bool:
         '''

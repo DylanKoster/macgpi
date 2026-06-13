@@ -117,6 +117,38 @@ SCoT file to write now:
 - Keep every SCoT artifact implementation-oriented, not merely a high-level summary.
 
 
+## File Modification Types
+
+For each created SCoT file:
+
+### NEW FILE
+- Create complete SCoT file with all required content
+- No existing code to preserve
+
+### EXISTING FILE (Modify only specified sections)
+- CRITICAL: Do NOT rewrite entire file
+- Show context (5-10 lines before/after each change)
+- Preserve all unrelated code
+- Use diff format examples
+
+### Examples
+
+#### CORRECT: Surgical patch to existing file
+Original has 100 lines, need to change 3 lines:
+  - Keep 97 lines unchanged
+  - Add the SCoT ONLY for the changes lines
+  - Show both old and new for clarity
+
+#### INCORRECT: Full file replacement
+DO NOT rewrite all 100 lines to change 3 lines
+This is the most common failure mode
+
+### Validation Checklist
+- [ ] File size is reasonable (not truncated)
+- [ ] All imports are present
+- [ ] No repeated/corrupted blocks
+
+
 ## Task
 
 Carefully analyze the PRD and implementation plan, derive the eventual implementation file structure, and then create one SCoT Markdown file for each eventual implementation artifact.

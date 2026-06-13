@@ -101,6 +101,39 @@ For each final file:
 - Add docstrings or JSDoc where useful for public functions, classes, modules, or APIs.
 - Avoid overengineering beyond the PRD, plan, and SCoT artifacts.
 
+## File Modification Types
+
+For each file in SCOT_INDEX:
+
+### NEW FILE
+- Create complete file with all required content
+- Implementation should match SCoT exactly
+- No existing code to preserve
+
+### EXISTING FILE (Modify only specified sections)
+- CRITICAL: Do NOT rewrite entire file
+- Show context (5-10 lines before/after each change)
+- Preserve all unrelated code
+- Use diff format examples
+
+## Examples
+
+### CORRECT: Surgical patch to existing file
+Original has 100 lines, need to change 3 lines:
+  - Keep 97 lines unchanged
+  - Modify only the 3 specified lines
+  - Show both old and new for clarity
+
+### INCORRECT: Full file replacement
+DO NOT rewrite all 100 lines to change 3 lines
+This is the most common failure mode
+
+## Validation Checklist
+- [ ] File size is reasonable (not truncated)
+- [ ] All imports are present
+- [ ] No repeated/corrupted blocks
+- [ ] Test code is complete, not stubs
+
 ## Testing Requirements
 
 Create all test files described by the SCoT artifacts.

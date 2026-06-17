@@ -9,6 +9,7 @@
     "findings",
     "recommendations",
     "next",
+    "compilation",
     "compliance"
   ],
   "properties": {
@@ -20,6 +21,29 @@
         "fail"
       ],
       "description": "High-level verdict for the implementation"
+    },
+    "compilation": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "success",
+            "failure"
+          ],
+          "description": "Whether the implementation successfully compiles/builds"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of compilation error messages if status is 'failure'"
+        }
+      },
+      "description": "Compilation results, contains whether compilation is succesfull and potential errors."
     },
     "summary": {
       "type": "string",
@@ -133,15 +157,26 @@
               ]
             },
             "passing": {
-              "type": "integer"
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of test case identifiers that passed."
             },
             "failing": {
-              "type": "integer"
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of test case identifiers that failed."
             },
             "coverage_pct": {
               "type": "number",
               "minimum": 0,
               "maximum": 100
+            },
+            "notes": {
+              "type": "string"
             }
           }
         },
@@ -157,6 +192,20 @@
                 "failed",
                 "partial"
               ]
+            },
+            "passing": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of test case identifiers that passed."
+            },
+            "failing": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of test case identifiers that failed."
             },
             "notes": {
               "type": "string"
@@ -182,7 +231,7 @@
           }
         }
       },
-      "oneOf": [
+      "anyOf": [
         {
           "required": [
             "unit"

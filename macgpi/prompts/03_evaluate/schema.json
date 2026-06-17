@@ -51,7 +51,6 @@
     },
     "compliance": {
       "type": "array",
-      "description": "List of PRD/requirements items and whether they are satisfied",
       "items": {
         "type": "object",
         "required": [
@@ -60,7 +59,8 @@
         ],
         "properties": {
           "requirement_id": {
-            "type": "string"
+            "type": "string",
+            "default": "Identifier for the requirement this object is about."
           },
           "status": {
             "enum": [
@@ -70,14 +70,16 @@
             ]
           },
           "notes": {
-            "type": "string"
+            "type": "string",
+            "description": "Any potential notes for the evaluation, e.g. why the requirement was not met."
           }
-        }
-      }
+        },
+        "description": "The corresponding requirement details."
+      },
+      "description": "List of PRD/requirements items and whether they are satisfied"
     },
     "findings": {
       "type": "array",
-      "description": "Concrete issues, gaps, or observations discovered during evaluation",
       "items": {
         "type": "object",
         "required": [
@@ -93,10 +95,12 @@
             "description": "A unique identifier for the finding, e.g., 'FIND-001'"
           },
           "title": {
-            "type": "string"
+            "type": "string",
+            "description": "A brief, descriptive title of the finding."
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "description": "A detailed description of the finding."
           },
           "severity": {
             "enum": [
@@ -107,17 +111,19 @@
             ]
           },
           "impact": {
-            "type": "string"
+            "type": "string",
+            "description": "What impact this finding can have on the project, the likelihood of this finding actually occurring and how damaging it could be if it did occur."
           },
           "files": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "The list of files affected."
           },
           "evidence": {
             "type": "string",
-            "description": "Format: <file>:<line-range> — <brief snippet or description>."
+            "description": "The evidence for the finding as a source code passage, formatted as: <file>:<line-range> — <brief snippet or description>."
           },
           "finding_type": {
             "enum": [
@@ -130,11 +136,11 @@
             ]
           }
         }
-      }
+      },
+      "description": "Concrete issues, gaps, or observations discovered during evaluation"
     },
     "test_results": {
       "type": "object",
-      "description": "Summary of test executions and coverage",
       "required": [
         "id"
       ],
@@ -173,12 +179,15 @@
             "coverage_pct": {
               "type": "number",
               "minimum": 0,
-              "maximum": 100
+              "maximum": 100,
+              "description": "The coverage percentage of the unit tests on the project."
             },
             "notes": {
-              "type": "string"
+              "type": "string",
+              "description": "Any potential notes for the evaluation, e.g. why some tests might be failing or not cover certain parts of the codebase."
             }
-          }
+          },
+          "description": "Unit tests information, passing tests, failing tests, coverage, etc."
         },
         "integration": {
           "type": "object",
@@ -208,9 +217,11 @@
               "description": "List of test case identifiers that failed."
             },
             "notes": {
-              "type": "string"
+              "type": "string",
+              "description": "Any potential notes for the evaluation, e.g. why some tests might be failing or not cover certain parts of the codebase."
             }
-          }
+          },
+          "description": "Integration tests information, passing tests, failing tests, etc."
         },
         "e2e": {
           "type": "object",
@@ -226,9 +237,11 @@
               ]
             },
             "notes": {
-              "type": "string"
+              "type": "string",
+              "description": "Any potential notes for the evaluation, e.g. why some tests might be failing or not cover certain parts of the codebase."
             }
-          }
+          },
+          "description": "Detailed results of test executions across different levels (unit, integration, end-to-end)"
         }
       },
       "anyOf": [
@@ -247,11 +260,11 @@
             "e2e"
           ]
         }
-      ]
+      ],
+      "description": "Summary of test executions and coverage"
     },
     "recommendations": {
       "type": "array",
-      "description": "Prioritized, actionable recommendations to remediate findings",
       "items": {
         "type": "object",
         "required": [
@@ -265,7 +278,8 @@
             "description": "A unique identifier for the recommendation, e.g., 'REC-001'"
           },
           "action": {
-            "type": "string"
+            "type": "string",
+            "description": "A detailed description of the recommended action to address the finding."
           },
           "priority": {
             "enum": [
@@ -276,17 +290,19 @@
             ]
           },
           "verification": {
-            "type": "string"
+            "type": "string",
+            "description": "A description of how the recommendation will be verified."
           },
           "linked_finding_ids": {
             "type": "array",
-            "description": "IDs of findings this recommendation addresses",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "IDs of findings this recommendation addresses",
           }
         }
-      }
+      },
+      "description": "Prioritized, actionable recommendations to remediate findings"
     },
     "quality_standards": {
       "type": "object",
@@ -297,12 +313,8 @@
       ],
       "properties": {
         "documentation": {
-          "type": "string"
-        },
-        "test_coverage_target": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 100
+          "type": "string",
+          "description": "The level of documentation provided for the implementation, e.g., 'comprehensive', 'adequate', 'insufficient'. Also include actionable improvements."
         },
         "iso_25010": {
           "type": "object",
@@ -318,32 +330,70 @@
           ],
           "properties": {
             "functional_suitability": {
-              "type": "string"
+              "type": "string",
+              "description": "Evaluation of how well the implementation meets the specified functional requirements. Include actionable improvements."
             },
             "performance_efficiency": {
-              "type": "string"
+              "type": "string",
+              "description": "Evaluation of the implementation's performance under specified conditions. Include actionable improvements."
             },
             "compatibility": {
-              "type": "string"
+              "type": "string",
+              "description": "Evaluation of the implementation's compatibility with other systems or environments. Include actionable improvements."
             },
             "usability": {
-              "type": "string"
+              "type": "string",
+              "description": "Evaluation of the implementation's ease of use and user experience. Include actionable improvements."
             },
             "reliability": {
-              "type": "string"
+              "type": "string",
+              "description": "Evaluation of the implementation's ability to perform consistently under specified conditions. Include actionable improvements."
             },
             "security": {
-              "type": "string"
-            },
-            "maintainability": {
-              "type": "string"
+              "type": "string",
+              "description": "Evaluation of the implementation's ability to protect against unauthorized access and vulnerabilities. Include actionable improvements."
             },
             "portability": {
-              "type": "string"
+              "type": "string",
+              "description": "Evaluation of the implementation's ability to be transferred from one environment to another. Include actionable improvements."
             }
-          }
+          },
+          "description": "Evaluation of the implementation against ISO 25010 quality standards. Excludes maintainability, which is evaluated separately."
         }
-      }
+      },
+      "description": "Code quality evaluation."
+    },
+    "maintainability": {
+      "type": "object",
+      "required": [
+        "code_readability",
+        "modularity",
+        "documentation_quality",
+        "test_coverage"
+      ],
+      "properties": {
+        "general": {
+          "type": "string",
+          "description": "General evaluation of the maintainability of the codebase. Include actionable improvements."
+        },
+        "code_readability": {
+          "type": "string",
+          "description": "Evaluation of how easily the code can be read and understood. Include actionable improvements."
+        },
+        "modularity": {
+          "type": "string",
+          "description": "Evaluation of how well the code is organized into modules or components. Include actionable improvements."
+        },
+        "documentation_quality": {
+          "type": "string",
+          "description": "Evaluation of the quality and completeness of the code documentation. Include actionable improvements."
+        },
+        "test_coverage": {
+          "type": "string",
+          "description": "Evaluation of the extent to which the code is covered by tests. Include actionable improvements."
+        }
+      },
+      "description": "Maintainability evaluation. Follow ISO 25010 maintainability criteria."
     },
     "next": {
       "type": "string",

@@ -14,7 +14,6 @@
     "properties": {
         "objectives": {
             "type": "array",
-            "description": "Primary goals and requirements for the software artifact",
             "items": {
                 "type": "object",
                 "required": [
@@ -24,10 +23,12 @@
                 ],
                 "properties": {
                     "id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier for the objective, e.g., OBJ-001"
                     },
                     "description": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Detailed description of the objective"
                     },
                     "priority": {
                         "enum": [
@@ -40,14 +41,15 @@
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "description": "Optional metrics to measure the success of the objective"
                     }
                 }
-            }
+            },
+            "description": "Primary goals and requirements for the software artifact"
         },
         "architecture": {
             "type": "object",
-            "description": "High-level architectural decisions",
             "required": [
                 "pattern",
                 "rationale"
@@ -59,22 +61,25 @@
                         "MVC",
                         "microservices",
                         "layered"
-                    ]
+                    ],
+                    "description": "Chosen architectural pattern for the software artifact"
                 },
                 "rationale": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Justification for the chosen architectural pattern"
                 },
                 "constraints": {
                     "type": "array",
                     "items": {
                         "type": "string"
-                    }
+                    },
+                    "description": "Any constraints or limitations that influenced the architectural decisions"
                 }
-            }
+            },
+            "description": "High-level architectural decisions"
         },
         "components": {
             "type": "array",
-            "description": "Planned components and modules",
             "items": {
                 "type": "object",
                 "required": [
@@ -83,26 +88,30 @@
                 ],
                 "properties": {
                     "name": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Name of the component or module"
                     },
                     "responsibility": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Description of the component's responsibility or role in the system"
                     },
                     "interfaces": {
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "description": "List of interfaces or APIs provided by the component"
                     },
                     "testability": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "How how the component can be tested"
                     }
                 }
-            }
+            },
+            "description": "Planned components and modules"
         },
         "dependencies": {
             "type": "array",
-            "description": "External libraries and internal component dependencies",
             "items": {
                 "type": "object",
                 "required": [
@@ -111,7 +120,8 @@
                 ],
                 "properties": {
                     "name": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Name of the external library or internal component"
                     },
                     "type": {
                         "enum": [
@@ -120,17 +130,19 @@
                         ]
                     },
                     "version": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Version of the dependency, if applicable"
                     },
                     "justification": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Justification for using this dependency"
                     }
                 }
-            }
+            },
+            "description": "External libraries and internal component dependencies"
         },
         "implementation_tasks": {
             "type": "array",
-            "description": "Ordered list of concrete implementation tasks derived from the components and architecture",
             "items": {
                 "type": "object",
                 "required": [
@@ -141,17 +153,20 @@
                 ],
                 "properties": {
                     "id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier for the task, e.g., TASK-001"
                     },
                     "title": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Title or name of the implementation task"
                     },
                     "component": {
                         "type": "string",
                         "description": "Name of the component this task belongs to"
                     },
                     "description": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Detailed description of the implementation task"
                     },
                     "depends_on": {
                         "type": "array",
@@ -164,34 +179,39 @@
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "description": "Criteria that must be met for the task to be considered complete"
                     }
                 }
-            }
+            },
+            "description": "Ordered list of concrete implementation tasks derived from the components and architecture"
         },
         "quality_standards": {
             "type": "object",
-            "description": "Maintainability and quality benchmarks",
             "properties": {
                 "coding_standards": {
                     "type": "array",
                     "items": {
                         "type": "string"
-                    }
+                    },
+                    "description": "List of coding standards to be followed, e.g., PEP 8 for Python"
                 },
                 "documentation_level": {
                     "enum": [
                         "minimal",
                         "standard",
                         "comprehensive"
-                    ]
+                    ],
+                    "description": "Level of documentation to be provided"
                 },
                 "test_coverage_target": {
                     "type": "number",
                     "minimum": 0,
-                    "maximum": 100
+                    "maximum": 100,
+                    "description": "Target percentage of code coverage for automated tests"
                 }
-            }
+            },
+            "description": "Maintainability and quality benchmarks"
         }
     }
 }

@@ -298,7 +298,7 @@
             "items": {
               "type": "string"
             },
-            "description": "IDs of findings this recommendation addresses",
+            "description": "IDs of findings this recommendation addresses"
           }
         }
       },

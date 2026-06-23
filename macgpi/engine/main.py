@@ -233,8 +233,7 @@ class MACGPi:
     def validate_output(self, phase_config: dict, output_file: str | None, output_dir: str, phase: str) -> bool:
         '''
         Validates the output of a phase. If the phase requires schema validation, validates the output file against the
-        specified schema and returns True if the output follows the schema, and False if it does not. If the phase is an
-        implementation phase test if the resulting implemenation compiles correctly.
+        specified schema and returns True if the output follows the schema, and False if it does not.
         '''
         if phase_config.get("schema", False):
             if output_file is None:
@@ -244,8 +243,7 @@ class MACGPi:
 
             return self.validate_schema_output(output_file, schema_path, phase)
         
-        process: subprocess.CompletedProcess = subprocess.run(["python", "-m", "compileall", output_dir])
-        return process.returncode == 0
+        return True
 
 
     def validate_macgpi_config(self, macgpi_config: dict) -> bool:

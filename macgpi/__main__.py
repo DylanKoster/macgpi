@@ -4,7 +4,7 @@ import logging
 from macgpi.engine.main import MACGPi
 
 
-def cli() -> None:
+def cli() -> int:
     parser = argparse.ArgumentParser(
         description="MACGPi: The Maintainability-Aware Code Generation Pipeline."
     )

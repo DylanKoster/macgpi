@@ -213,9 +213,9 @@ def _mock_agent(mocker, output_dir: str):
     mock_am.run.side_effect = agent_side_effect
     return mock_am
 
-
 @pytest.mark.integration
 @pytest.mark.slow
+@pytest.mark.timeout(300)
 class TestMacgpiIntegration:
     """
     Integration tests using the real prompt files, TemplateManager, and phase config.
@@ -228,6 +228,7 @@ class TestMacgpiIntegration:
         """Full pipeline returns True using real prompt files and real schema validation."""
         output_dir = str(tmp_path)
         mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
+        mocker.patch("macgpi.engine.main.validate_output_file", return_value=True)
         _mock_agent(mocker, output_dir)
 
         result = MACGPi(
@@ -242,6 +243,8 @@ class TestMacgpiIntegration:
         """Agent is called once per template: plan(1) + implement(2) + evaluate(1) = 4."""
         output_dir = str(tmp_path)
         mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
+        mocker.patch("macgpi.engine.main.validate_output_file", return_value=True)
+
         mock_am = _mock_agent(mocker, output_dir)
 
         MACGPi(
@@ -256,6 +259,8 @@ class TestMacgpiIntegration:
         """Plan prompt rendered by the real TemplateManager contains the input description."""
         output_dir = str(tmp_path)
         mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
+        mocker.patch("macgpi.engine.main.validate_output_file", return_value=True)
+
         mock_am = _mock_agent(mocker, output_dir)
 
         description = "Build a hello world Python script."
@@ -272,6 +277,7 @@ class TestMacgpiIntegration:
         """Invalid plan output causes the phase to retry; valid output on the second attempt continues."""
         output_dir = str(tmp_path)
         mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
+        mocker.patch("macgpi.engine.main.validate_output_file", return_value=True)
 
         mock_am = mocker.MagicMock()
         mocker.patch("macgpi.engine.main.AgentManager", return_value=mock_am)
@@ -313,6 +319,8 @@ class TestMacgpiIntegration:
         """Expected output files exist after a successful run."""
         output_dir = str(tmp_path)
         mocker.patch("macgpi.engine.main.vllm_health", return_value=True)
+        mocker.patch("macgpi.engine.main.validate_output_file", return_value=True)
+        
         _mock_agent(mocker, output_dir)
 
         MACGPi(

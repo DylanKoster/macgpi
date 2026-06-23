@@ -18,6 +18,7 @@ Analyze the provided PRD and produce a structured implementation plan with the f
 - Shows what kind of implementation task this is.
 - Value: `modification` when there is an existing project that needs to be modified to fix an issue on add an enhancement.
 - Value: `greenfield` when the project is completely new and is expected to be built from the ground up.  
+- If unsure, inspect the project directory. Prefer `modification` when meaningful source files, tests, or project metadata already exist.
 
 ### 2. **Objectives**
 - One entry per primary goal or requirement derived from the PRD
@@ -46,6 +47,20 @@ Analyze the provided PRD and produce a structured implementation plan with the f
 - Write a `description` explaining exactly what must be built or configured
 - List `depends_on` as the `id`s of any tasks that must complete first (omit if none)
 - List `acceptance_criteria` as verifiable conditions that confirm the task is done
+
+The tasks depend on the type of the implementation:
+
+For `modification` plans, include in the relevant implementation tasks:
+- Existing files or modules likely to change.
+- Existing behavior that must be preserved.
+- Targeted tests to add or update.
+- Non-goals: unrelated files, broad rewrites, dependency changes, or documentation churn that should be avoided.
+
+For `greenfield` plans, include in the relevant implementation tasks:
+- Project structure to create.
+- Source modules, tests, configuration, scripts, and documentation.
+- Setup and run commands.
+- Acceptance criteria for a runnable first version.
 
 ### 7. **Quality Standards**
 - List the `coding_standards` to be enforced (e.g. linting rules, style guides)

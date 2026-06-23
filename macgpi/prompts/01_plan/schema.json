@@ -4,6 +4,7 @@
     "description": "Schema for the planning phase output of a maintainable software artifact generation pipeline",
     "type": "object",
     "required": [
+        "type",
         "objectives",
         "architecture",
         "components",

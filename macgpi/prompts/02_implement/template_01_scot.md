@@ -32,11 +32,14 @@ For `modification` plans:
 - For existing files, plan surgical edits only. Preserve unrelated behavior, public interfaces, formatting style, and tests.
 - Do not create broad architecture, README, configuration, or documentation SCoT artifacts unless the plan explicitly requires those files.
 - Include regression-test SCoT artifacts when a bug fix or behavioral change should be protected by tests.
+- Every SCoT artifact for an existing file must include a **Preservation Boundary** section that states what must remain unchanged and where edits are allowed.
+- If a planned change can be made by editing an existing file, prefer a SCoT artifact for that existing file over creating replacement files or parallel implementations.
 
 For `greenfield` plans:
 - Derive the full project structure required by the PRD and implementation plan.
 - Include source files, tests, configuration files, scripts, and documentation files where needed for a runnable, maintainable project.
 - Create SCoT artifacts for all eventual implementation artifacts required to build the project from the ground up.
+- Whole-file creation is expected for new project files, but each SCoT artifact must still define concrete units, tests, and dependencies.
 
 All SCoT artifacts in this stage must be **unit-level SCoT**. This means each artifact must decompose reasoning to the level of concrete implementation units (for example: functions, methods, handlers, validators, mappers, query builders, and test cases), not only file-level summaries.
 
@@ -84,7 +87,7 @@ The SCoT files must be located in the same directory structure where the eventua
 
 For every planned implementation file, create a corresponding Markdown SCoT file. The meaning of "planned implementation file" depends on `implementation_plan.type`:
 
-- For `modification`, this means only the files that the plan requires you to create or modify.
+- For `modification`, this means only the existing files that must be modified and the new files that are directly required by the requested fix or enhancement.
 - For `greenfield`, this means every file needed for the new project.
 
 Use this naming convention:
@@ -147,27 +150,18 @@ SCoT file to write now:
 
 For each created SCoT file:
 
-### NEW FILE
+### Greenfield
 - Create complete SCoT file with all required content
 - No existing code to preserve
 
-### EXISTING FILE (Modify only specified sections)
+### Modification 
 - CRITICAL: Do NOT rewrite entire file
 - Show context (5-10 lines before/after each change)
 - Preserve all unrelated code
 - Use diff format examples
+- Include a Preservation Boundary section for every existing target file
+- Include a Testing Notes section that explains the targeted regression or behavior check for the changed units
 
-### Examples
-
-#### CORRECT: Surgical patch to existing file
-Original has 100 lines, need to change 3 lines:
-  - Keep 97 lines unchanged
-  - Add the SCoT ONLY for the changes lines
-  - Show both old and new for clarity
-
-#### INCORRECT: Full file replacement
-DO NOT rewrite all 100 lines to change 3 lines
-This is the most common failure mode
 
 ### Validation Checklist
 - [ ] File size is reasonable (not truncated)
@@ -189,6 +183,8 @@ If the type is `modification`, first identify the existing files that are releva
 - New files to add
 - Tests to add or update
 - Files intentionally left unchanged
+- Private planning or generated artifacts that must not become final implementation output
+- The minimal-change boundary for the patch
 
 If the type is `greenfield`, derive the complete initial project structure. The SCoT index must explicitly distinguish:
 
@@ -245,6 +241,7 @@ This file must summarize:
 - The implementation plan `type`
 - For `modification`, the minimal-change boundary and the existing files that must be preserved
 - For `greenfield`, the complete project scaffold required for a runnable first version
+- For `modification`, any generated SCoT or planning artifacts that are implementation aids only and should not be treated as product files
 
 The index file must not contain final source code.
 
@@ -308,7 +305,53 @@ Constraints:
   - ...
 ```
 
-## 3. Unit-Level Implementation Sequence Structure
+## 3. Preservation Boundary
+
+This section is required for every SCoT artifact when `implementation_plan.type` is `modification`.
+
+For existing files, describe the exact boundary of the intended edit. For new files added by a modification plan, explain why the new file is necessary and what existing behavior it must not disturb.
+
+Use this format:
+
+```text
+Plan type:
+  modification
+
+Target status:
+  <existing file to modify | new file required by modification>
+
+Must preserve:
+  - Existing public interfaces:
+      - ...
+  - Existing behavior:
+      - ...
+  - Existing tests, compatibility expectations, or documented behavior:
+      - ...
+  - Existing style, framework conventions, and dependency boundaries:
+      - ...
+
+Allowed change area:
+  - Functions, classes, sections, tests, or configuration entries:
+      - ...
+
+Do not change:
+  - ...
+
+Reason a new file is required, if applicable:
+  - ...
+```
+
+For `greenfield` plans, write:
+
+```text
+Plan type:
+  greenfield
+
+Preservation boundary:
+  Not applicable because this is a new project file.
+```
+
+## 4. Unit-Level Implementation Sequence Structure
 
 A **unit** is a concrete implementation item that will exist inside this file: a function, method, class, handler, schema definition, validator, query builder, or test case. Do not treat the file as a whole as a single unit.
 
@@ -340,7 +383,7 @@ Reasoning:
 ...
 ```
 
-## 4. File-Level Dependency Structure
+## 5. File-Level Dependency Structure
 
 Describe how this file depends on and supports other files.
 
@@ -363,7 +406,7 @@ Implementation order:
       - ...
 ```
 
-## 5. Testing Notes for This File
+## 6. Testing Notes for This File
 
 Describe how this file should be tested later.
 
@@ -390,7 +433,11 @@ For test files, describe the tests that the eventual test file will contain.
 
 For source files, describe which test files should validate this source file.
 
-## 6. Documentation Notes for This File
+For `modification` plans, testing notes must focus on targeted regression coverage and preservation of nearby existing behavior.
+
+For `greenfield` plans, testing notes must cover the core workflow or component responsibility introduced by the file.
+
+## 7. Documentation Notes for This File
 
 Identify documentation that should exist for the eventual file.
 

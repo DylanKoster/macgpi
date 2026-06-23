@@ -12,6 +12,13 @@
         "quality_standards"
     ],
     "properties": {
+        "type": {
+            "enum": [
+                "modification",
+                "greenfield"
+            ],
+            "description": "Type of implementation: 'modification' for existing systems which need to be modified, 'greenfield' for new systems"
+        },
         "objectives": {
             "type": "array",
             "items": {

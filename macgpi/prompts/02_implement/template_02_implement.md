@@ -8,12 +8,18 @@ You are now in the **implementation stage**.
 
 The previous stage generated SCoT planning files that describe the intended implementation structure, dependencies, branches, loops, tests, and documentation. Your task is to read those SCoT files and create the actual implementation files they describe.
 
+The implementation plan contains a top-level `type` field:
+
+- `modification`: change an existing project to fix an issue or add an enhancement.
+- `greenfield`: build a new project from the ground up.
+
+You must adapt implementation behavior to this type.
+
 ## Input
 
 - **PRD**: `{{ system_prd }}`
 
 - **IMPLEMENTATION PLAN**: `{{ implementation_plan }}`
-
 
 - **OUTPUT PATH**: `{{ output_dir }}`
 
@@ -23,20 +29,27 @@ Translate the SCoT files under `{{ output_dir }}` into working source code, test
 
 The SCoT files are planning artifacts only. They should guide implementation, but they are not the final output.
 
+For `modification` plans, the primary goal is a correct, minimal, maintainable change to the existing project.
+
+For `greenfield` plans, the primary goal is a complete, runnable, maintainable initial project.
+
 ## Required Behavior
 
 You must:
 
 1. Read `{{ output_dir }}/SCOT_INDEX.scot.md`.
 2. Read every `*.scot.md` file referenced by the index.
-3. Derive the final implementation file paths from the SCoT files.
-4. Create the corresponding real implementation files under `{{ output_dir }}`.
-5. Preserve the directory structure described by the SCoT artifacts.
-6. Implement all required functionality from the PRD, implementation plan, and SCoT files.
-7. Include tests, configuration, scripts, and documentation where the SCoT files call for them.
-8. Write complete, functional, production-ready files.
-9. Do not write new SCoT files.
-10. Do not output code only in chat.
+3. Determine the implementation plan `type` from the plan and SCoT index.
+4. Derive the final implementation file paths from the SCoT files.
+5. Create or modify the corresponding real implementation files under `{{ output_dir }}`.
+6. For `modification`, inspect existing target files before editing and apply surgical changes only.
+7. For `greenfield`, create the complete project structure described by the plan and SCoT artifacts.
+8. Preserve the directory structure described by the SCoT artifacts.
+9. Implement all required functionality from the PRD, implementation plan, and SCoT files.
+10. Include tests, configuration, scripts, and documentation where the SCoT files call for them.
+11. Write complete, functional, production-ready files.
+12. Do not write new SCoT files.
+13. Do not output code only in chat.
 
 ## File Translation Rule
 
@@ -72,7 +85,18 @@ Do not copy the SCoT text into the final files. Use it as the blueprint for the 
 
 ## Implementation Priorities
 
-Follow this order unless the SCoT index specifies a more precise dependency order:
+Follow the order from the SCoT index when it is more precise. Otherwise use the order that matches the plan type.
+
+For `modification`:
+
+1. Re-read the existing files identified by the SCoT index.
+2. Update or add targeted regression tests where feasible.
+3. Modify the smallest necessary source units.
+4. Update dependent units only when required by the source change.
+5. Update documentation or configuration only when the PRD/plan explicitly requires it.
+6. Run targeted checks or tests where possible.
+
+For `greenfield`:
 
 1. Project metadata and configuration files
 2. Shared types, schemas, constants, and utilities
@@ -101,6 +125,22 @@ For each final file:
 - Add docstrings or JSDoc where useful for public functions, classes, modules, or APIs.
 - Avoid overengineering beyond the PRD, plan, and SCoT artifacts.
 
+For `modification` plans:
+
+- Preserve existing project architecture and conventions.
+- Do not rewrite entire files unless the SCoT artifact and implementation plan justify it.
+- Preserve unrelated imports, APIs, comments, formatting, and tests.
+- Avoid adding new dependencies unless explicitly justified in the plan.
+- Do not create broad generated scaffolding, new documentation sets, or project metadata unrelated to the requested change.
+- If an existing behavior is not mentioned by the PRD or plan, treat it as behavior to preserve.
+
+For `greenfield` plans:
+
+- Create all files required for a runnable first version.
+- Include project metadata, dependency declarations, tests, and user-facing documentation where appropriate.
+- Keep the structure simple and coherent.
+- Avoid leaving partial scaffolding that cannot run.
+
 ## File Modification Types
 
 For each file in SCOT_INDEX:
@@ -115,6 +155,7 @@ For each file in SCOT_INDEX:
 - Show context (5-10 lines before/after each change)
 - Preserve all unrelated code
 - Use diff format examples
+- This is the default behavior for `modification` plans.
 
 ## Examples
 
@@ -136,7 +177,11 @@ This is the most common failure mode
 
 ## Testing Requirements
 
-Create all test files described by the SCoT artifacts.
+Create or update the test files described by the SCoT artifacts.
+
+For `modification` plans, prefer targeted regression tests that demonstrate the issue or enhancement behavior. Do not create large unrelated test suites.
+
+For `greenfield` plans, create the project-level test suite needed to cover core workflows and acceptance criteria.
 
 Tests must cover:
 
@@ -155,7 +200,11 @@ Use mocks, fixtures, or test doubles where the SCoT files recommend them.
 
 ## Documentation Requirements
 
-Create all documentation files described by the SCoT artifacts.
+Create or update documentation files described by the SCoT artifacts.
+
+For `modification` plans, update documentation only when the requested behavior, public API, configuration, or usage changes require it.
+
+For `greenfield` plans, create setup and usage documentation needed for a new user or maintainer.
 
 Documentation should include, where relevant:
 
@@ -205,6 +254,10 @@ You must not write files outside:
 Do not write SCoT artifacts into the output path unless explicitly required as documentation.
 
 Do not delete SCoT files. Do not overwrite unrelated existing files unless they are the exact final implementation targets derived from matching SCoT files.
+
+For `modification` plans, do not overwrite an existing implementation target wholesale when a localized edit can satisfy the SCoT artifact.
+
+For `greenfield` plans, it is acceptable to create complete new files when they are required by the plan.
 
 Do not leave placeholder implementations such as:
 

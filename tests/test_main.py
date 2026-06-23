@@ -99,7 +99,7 @@ class TestMacgpiMain:
                     },
                     "schema": False,
                     "path": "04_invalid/",
-                    "output_path": "docs/plan.json",
+                    "output_file": "docs/plan.json",
                     "next": "implement"
                 }
             }
@@ -139,7 +139,7 @@ class TestMacgpiMain:
                     },
                     "schema": False,
                     "path": "01_plan/",
-                    "output_path": "docs/plan.json",
+                    "output_file": "docs/plan.json",
                     "next": "implement"
                 }
             }

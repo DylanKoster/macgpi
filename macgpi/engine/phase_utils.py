@@ -20,7 +20,7 @@ def parse_phase_config(config_file: str | None) -> dict | None:
                     "input1": "path/to/input1",
                     "input2": "path/to/input2"
                 },
-                "output_path": "output_path",
+                "output_file": "output_file",
                 "schema:" true
             },
             "phase_name_2": {
@@ -111,15 +111,15 @@ def get_next_phase(phase_config: dict, output_dir: str) -> str | None:
 
     logger.debug(f"Next phase is dynamic. Attempting to read next phase from output directory at {output_dir}...")
 
-    output_path: str | None = phase_config.get("output_file", None)
-    if output_path is None:
+    output_file: str | None = phase_config.get("output_file", None)
+    if output_file is None:
         return None
 
-    with open(os.path.join(output_dir, output_path), "r") as f:
+    with open(os.path.join(output_dir, output_file), "r") as f:
         output_content: dict = json.load(f)
 
     logger.debug(
-        f"Inferred phase: {output_content['next']} from output content at {output_path}: \n{json.dumps(output_content,
+        f"Inferred phase: {output_content['next']} from output content at {output_file}: \n{json.dumps(output_content,
                                                                                                        indent=4)}")
 
     return str(output_content["next"])

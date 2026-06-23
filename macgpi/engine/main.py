@@ -148,7 +148,7 @@ class MACGPi:
 
                 # If the phase requires schema validation of the output, validate the output and re-run the phase if it
                 # fails
-                if not self.validate_output(phase_config, output_file, self.output_dir, phase):
+                if not self.validate_output(phase_config, output_file):
                         logger.warning(
                             f"Output for phase {phase} did not validate against the schema. Re-running phase...")
                         self.phase_visits[phase] -= 1
@@ -210,13 +210,13 @@ class MACGPi:
 
         return True
 
-    def validate_schema_output(self, output_path: str, schema_path: str, phase: str | None) -> bool:
+    def validate_schema_output(self, output_file_path: str, schema_path: str) -> bool:
         '''
         Validates the intermediate output file of a phase against the specified schema. Returns True if the output
         follows the schema, and False if it is not.
         '''
         try:
-            with open(schema_path, "r") as schema_file, open(output_path, "r") as output_file:
+            with open(schema_path, "r") as schema_file, open(output_file_path, "r") as output_file:
                 schema_dict: dict = json.load(schema_file)
                 output_dict: dict = json.load(output_file)
                 valid: bool = validate_output_file(output_dict, schema_dict)
@@ -230,7 +230,7 @@ class MACGPi:
 
         return True
 
-    def validate_output(self, phase_config: dict, output_file: str | None, output_dir: str, phase: str) -> bool:
+    def validate_output(self, phase_config: dict, output_file: str | None) -> bool:
         '''
         Validates the output of a phase. If the phase requires schema validation, validates the output file against the
         specified schema and returns True if the output follows the schema, and False if it does not.
@@ -241,7 +241,7 @@ class MACGPi:
 
             schema_path: str = os.path.join(self.templateManager.prompt_dir, phase_config["path"], "schema.json")
 
-            return self.validate_schema_output(output_file, schema_path, phase)
+            return self.validate_schema_output(output_file, schema_path)
         
         return True
 

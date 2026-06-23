@@ -10,7 +10,7 @@ You are an expert software architect tasked with revising an implementation of a
 
 - **EVALUATION**: {{ evaluation_report }}
 
-- **CURRENT CODE**: All code located in {{ output_path }}
+- **CURRENT CODE**: All code located in {{ output_dir }}
 
 ## Your Task
 

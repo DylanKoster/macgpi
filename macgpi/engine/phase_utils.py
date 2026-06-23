@@ -111,7 +111,7 @@ def get_next_phase(phase_config: dict, output_dir: str) -> str | None:
 
     logger.debug(f"Next phase is dynamic. Attempting to read next phase from output directory at {output_dir}...")
 
-    output_path: str | None = phase_config.get("output_path", None)
+    output_path: str | None = phase_config.get("output_file", None)
     if output_path is None:
         return None
 

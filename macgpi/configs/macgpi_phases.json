@@ -28,7 +28,7 @@
             "path": "03_evaluate/",
             "output_file": "docs/evaluation_report.json",
             "next": "dynamic",
-            "max_visits": 5,
+            "max_visits": 3,
             "max_visits_exceeded_next": "finish"
         },
         "revise": {
@@ -40,7 +40,7 @@
             "schema": false,
             "path": "04_revise/",
             "next": "evaluate",
-            "max_visits": 5
+            "max_visits": 3
         }
     }
 }

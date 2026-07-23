@@ -18,6 +18,29 @@ However, you must **not** write production source code yet. Instead, write SCoT 
 
 Generate structured implementation-reasoning artifacts that translate the PRD and implementation plan into code-oriented solving processes.
 
+The implementation plan contains a top-level `type` field:
+
+- `modification`: an existing project must be changed to fix an issue or add an enhancement.
+- `greenfield`: a new project must be built from the ground up.
+
+You must adapt the SCoT artifact set to this type.
+
+For `modification` plans:
+- Treat the existing project under `{{ output_dir }}` as authoritative.
+- Inspect the existing repository structure before deciding which SCoT files to create.
+- Create SCoT artifacts only for files that must be created or modified to satisfy the PRD and implementation plan.
+- For existing files, plan surgical edits only. Preserve unrelated behavior, public interfaces, formatting style, and tests.
+- Do not create broad architecture, README, configuration, or documentation SCoT artifacts unless the plan explicitly requires those files.
+- Include regression-test SCoT artifacts when a bug fix or behavioral change should be protected by tests.
+- Every SCoT artifact for an existing file must include a **Preservation Boundary** section that states what must remain unchanged and where edits are allowed.
+- If a planned change can be made by editing an existing file, prefer a SCoT artifact for that existing file over creating replacement files or parallel implementations.
+
+For `greenfield` plans:
+- Derive the full project structure required by the PRD and implementation plan.
+- Include source files, tests, configuration files, scripts, and documentation files where needed for a runnable, maintainable project.
+- Create SCoT artifacts for all eventual implementation artifacts required to build the project from the ground up.
+- Whole-file creation is expected for new project files, but each SCoT artifact must still define concrete units, tests, and dependencies.
+
 All SCoT artifacts in this stage must be **unit-level SCoT**. This means each artifact must decompose reasoning to the level of concrete implementation units (for example: functions, methods, handlers, validators, mappers, query builders, and test cases), not only file-level summaries.
 
 All unit-level SCoT artifacts must also use **ReAct-style reasoning** (Reason + Act + Observe) to make decision-making explicit and verifiable.
@@ -62,7 +85,10 @@ You must write your SCoT artifacts into `{{ output_dir }}`.
 
 The SCoT files must be located in the same directory structure where the eventual implementation files will be created.
 
-For every planned implementation file, create a corresponding Markdown SCoT file.
+For every planned implementation file, create a corresponding Markdown SCoT file. The meaning of "planned implementation file" depends on `implementation_plan.type`:
+
+- For `modification`, this means only the existing files that must be modified and the new files that are directly required by the requested fix or enhancement.
+- For `greenfield`, this means every file needed for the new project.
 
 Use this naming convention:
 
@@ -112,9 +138,35 @@ SCoT file to write now:
 - Do **not** write final documentation yet.
 - Do **not** skip functionality from the PRD or implementation plan.
 - Do **not** invent requirements that are not supported by the PRD or plan.
+- Respect `implementation_plan.type` when deciding the artifact scope.
+- For `modification`, do **not** plan unrelated rewrites, broad generated scaffolding, or whole-file replacement when a localized edit is sufficient.
+- For `greenfield`, do **not** under-specify project setup, tests, or documentation required for a complete runnable project.
 - If the plan is ambiguous, mark the ambiguity explicitly in the relevant SCoT file.
 - If the plan appears technically flawed, identify the issue and propose a pragmatic adjustment in the relevant SCoT file.
 - Keep every SCoT artifact implementation-oriented, not merely a high-level summary.
+
+
+## File Modification Types
+
+For each created SCoT file:
+
+### Greenfield
+- Create complete SCoT file with all required content
+- No existing code to preserve
+
+### Modification 
+- CRITICAL: Do NOT rewrite entire file
+- Show context (5-10 lines before/after each change)
+- Preserve all unrelated code
+- Use diff format examples
+- Include a Preservation Boundary section for every existing target file
+- Include a Testing Notes section that explains the targeted regression or behavior check for the changed units
+
+
+### Validation Checklist
+- [ ] File size is reasonable (not truncated)
+- [ ] All imports are present
+- [ ] No repeated/corrupted blocks
 
 
 ## Task
@@ -122,6 +174,25 @@ SCoT file to write now:
 Carefully analyze the PRD and implementation plan, derive the eventual implementation file structure, and then create one SCoT Markdown file for each eventual implementation artifact.
 
 Each SCoT file must act as the blueprint for creating its corresponding source, test, or documentation file in a later step.
+
+Before writing SCoT files, determine the plan type from the top-level `type` field in the implementation plan.
+
+If the type is `modification`, first identify the existing files that are relevant to the requested issue or enhancement. The SCoT index must explicitly distinguish:
+
+- Existing files to modify
+- New files to add
+- Tests to add or update
+- Files intentionally left unchanged
+- Private planning or generated artifacts that must not become final implementation output
+- The minimal-change boundary for the patch
+
+If the type is `greenfield`, derive the complete initial project structure. The SCoT index must explicitly distinguish:
+
+- Source files
+- Test files
+- Configuration and metadata files
+- Documentation files
+- Scripts or entry points
 
 ---
 
@@ -167,6 +238,10 @@ This file must summarize:
 - The recommended implementation order
 - Cross-file dependencies
 - Global assumptions, risks, and unresolved clarifications
+- The implementation plan `type`
+- For `modification`, the minimal-change boundary and the existing files that must be preserved
+- For `greenfield`, the complete project scaffold required for a runnable first version
+- For `modification`, any generated SCoT or planning artifacts that are implementation aids only and should not be treated as product files
 
 The index file must not contain final source code.
 
@@ -230,7 +305,53 @@ Constraints:
   - ...
 ```
 
-## 3. Unit-Level Implementation Sequence Structure
+## 3. Preservation Boundary
+
+This section is required for every SCoT artifact when `implementation_plan.type` is `modification`.
+
+For existing files, describe the exact boundary of the intended edit. For new files added by a modification plan, explain why the new file is necessary and what existing behavior it must not disturb.
+
+Use this format:
+
+```text
+Plan type:
+  modification
+
+Target status:
+  <existing file to modify | new file required by modification>
+
+Must preserve:
+  - Existing public interfaces:
+      - ...
+  - Existing behavior:
+      - ...
+  - Existing tests, compatibility expectations, or documented behavior:
+      - ...
+  - Existing style, framework conventions, and dependency boundaries:
+      - ...
+
+Allowed change area:
+  - Functions, classes, sections, tests, or configuration entries:
+      - ...
+
+Do not change:
+  - ...
+
+Reason a new file is required, if applicable:
+  - ...
+```
+
+For `greenfield` plans, write:
+
+```text
+Plan type:
+  greenfield
+
+Preservation boundary:
+  Not applicable because this is a new project file.
+```
+
+## 4. Unit-Level Implementation Sequence Structure
 
 A **unit** is a concrete implementation item that will exist inside this file: a function, method, class, handler, schema definition, validator, query builder, or test case. Do not treat the file as a whole as a single unit.
 
@@ -262,7 +383,7 @@ Reasoning:
 ...
 ```
 
-## 4. File-Level Dependency Structure
+## 5. File-Level Dependency Structure
 
 Describe how this file depends on and supports other files.
 
@@ -285,7 +406,7 @@ Implementation order:
       - ...
 ```
 
-## 5. Testing Notes for This File
+## 6. Testing Notes for This File
 
 Describe how this file should be tested later.
 
@@ -312,7 +433,11 @@ For test files, describe the tests that the eventual test file will contain.
 
 For source files, describe which test files should validate this source file.
 
-## 6. Documentation Notes for This File
+For `modification` plans, testing notes must focus on targeted regression coverage and preservation of nearby existing behavior.
+
+For `greenfield` plans, testing notes must cover the core workflow or component responsibility introduced by the file.
+
+## 7. Documentation Notes for This File
 
 Identify documentation that should exist for the eventual file.
 

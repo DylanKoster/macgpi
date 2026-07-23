@@ -7,15 +7,16 @@ build-backend = "setuptools.build_meta"
 # ---------------------------------------------------------------------------
 [project]
 name = "macgpi"
-version = "0.1.0"
+version = "1.0.0"
 description = "Maintainability-Aware Code Generation Pipeline"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "mini-swe-agent==2.2.8",
     "requests==2.33.1",
     "jinja2==3.1.6",
     "jsonschema>=4.20.0",
+    "litellm==1.90.0"
 ]
 
 [project.scripts]
@@ -29,6 +30,7 @@ dev = [
     "pytest-cov>=4.0.0",
     "pytest-mock>=3.10.0",
     "pytest-mypy>=0.10.0",
+    "pytest-timeout>=2.4.0",
     "mypy>=1.0.0",
     "types-PyYAML>=6.0.0",
     "types-requests>=2.31.0",
@@ -51,6 +53,7 @@ markers = [
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
 ]
+timeout=30
 
 # ---------------------------------------------------------------------------
 # Coverage
@@ -80,7 +83,7 @@ exclude_lines = [
 # Mypy
 # ---------------------------------------------------------------------------
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.12"
 strict = false
 ignore_missing_imports = true
 warn_unused_ignores = true

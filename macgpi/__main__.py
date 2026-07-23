@@ -4,7 +4,7 @@ import logging
 from macgpi.engine.main import MACGPi
 
 
-def cli() -> None:
+def cli() -> int:
     parser = argparse.ArgumentParser(
         description="MACGPi: The Maintainability-Aware Code Generation Pipeline."
     )
@@ -63,8 +63,8 @@ def cli() -> None:
     params.pop("log_level")
 
     macgpi: MACGPi = MACGPi(**params)
-    macgpi.run()
+    return 0 if macgpi.run() else 1
 
 
 if __name__ == "__main__":
-    cli()
+    exit(cli())

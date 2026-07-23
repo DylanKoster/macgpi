@@ -177,14 +177,14 @@ class TestGetNextPhase:
 
         phase_config: dict = {
             "next": "dynamic",
-            "output_path": "docs/plan.json"
+            "output_file": "docs/plan.json"
         }
 
         result: str = get_next_phase(phase_config, sample_output_dir)
         assert result == "plan"
 
-    def test_dynamic_without_output_path(self, sample_output_dir):
-        """Test dynamic next phase without output_path returns None."""
+    def test_dynamic_without_output_file(self, sample_output_dir):
+        """Test dynamic next phase without output_file returns None."""
         phase_config: dict = {
             "next": "dynamic"
         }
